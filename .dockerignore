@@ -1,0 +1,25 @@
+# Version-control and editor metadata
+.git
+.gitignore
+.vscode
+.idea
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies and generated output
+node_modules
+**/node_modules
+dist
+build
+coverage
+.cache
+
+# Logs and operating-system files
+*.log
+.DS_Store
+Thumbs.db
