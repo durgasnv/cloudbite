@@ -6,7 +6,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies...'
-                bat 'npm install'
+                bat 'npm ci'
             }
         }
 
