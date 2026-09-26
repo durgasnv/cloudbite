@@ -1,0 +1,24 @@
+{
+  "name": "cloudbite-server",
+  "version": "1.0.0",
+  "description": "CloudBite REST API Backend with JSON file data storage",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "food-ordering",
+    "devsecops",
+    "express",
+    "rest-api",
+    "cloudbite"
+  ],
+  "author": "CloudBite Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

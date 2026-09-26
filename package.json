@@ -1,0 +1,24 @@
+{
+  "name": "cloudbite",
+  "version": "1.0.0",
+  "description": "CloudBite - Modern Food Ordering Web Application (DevSecOps project)",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js",
+    "install:server": "cd server && npm install"
+  },
+  "keywords": [
+    "cloudbite",
+    "devsecops",
+    "food-ordering",
+    "express",
+    "javascript"
+  ],
+  "author": "CloudBite Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.22.3"
+  }
+}
