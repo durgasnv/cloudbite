@@ -16,6 +16,13 @@ pipeline {
                 bat 'npm test'
             }
         }
+
+        stage('Security Audit') {
+            steps {
+                echo 'Checking dependencies for high-severity vulnerabilities...'
+                bat 'npm audit --audit-level=high'
+            }
+        }
     }
 
     post {
