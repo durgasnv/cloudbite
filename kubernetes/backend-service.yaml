@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudbite-backend
+  namespace: cloudbite
+  labels:
+    app.kubernetes.io/name: cloudbite-backend
+    app.kubernetes.io/part-of: cloudbite
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: cloudbite-backend
+  ports:
+    - name: http
+      port: 5000
+      targetPort: http

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudbite-backend
+  namespace: cloudbite
+  labels:
+    app.kubernetes.io/name: cloudbite-backend
+    app.kubernetes.io/part-of: cloudbite
+spec:
+  # JSON-file order storage cannot be shared safely across replicas.
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cloudbite-backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cloudbite-backend
+        app.kubernetes.io/part-of: cloudbite
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: backend
+          image: cloudbite-backend:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: cloudbite-backend-config
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
