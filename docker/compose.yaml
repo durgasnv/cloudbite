@@ -1,0 +1,32 @@
+services:
+  cloudbite-backend:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    image: cloudbite-backend:local
+    environment:
+      NODE_ENV: production
+      PORT: "5000"
+    expose:
+      - "5000"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:5000/api/health').then(response => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  cloudbite-frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend.Dockerfile
+    image: cloudbite-frontend:local
+    depends_on:
+      cloudbite-backend:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
