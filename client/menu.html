@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Restaurant Menu - CloudBite</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo">
+        <div class="logo-icon">🍔</div>
+        <div>Cloud<span class="highlight">Bite</span></div>
+      </a>
+
+      <button class="mobile-toggle" aria-label="Toggle navigation">☰</button>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="restaurants.html" class="nav-link">Restaurants</a></li>
+        <li><a href="orders.html" class="nav-link">Order History</a></li>
+        <li>
+          <a href="cart.html" class="nav-link cart-link">
+            🛒 Cart <span class="cart-badge">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+
+      <!-- Breadcrumbs / Back button -->
+      <div style="margin-bottom: 1.25rem;">
+        <a href="restaurants.html" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.35rem;">
+          ← Back to all restaurants
+        </a>
+      </div>
+
+      <!-- Restaurant Header Banner -->
+      <div id="restaurantBanner" class="restaurant-hero-banner">
+        <div class="loader-container" style="width: 100%;">
+          <div class="spinner"></div>
+          <p>Loading restaurant menu...</p>
+        </div>
+      </div>
+
+      <!-- Category Tabs -->
+      <div class="section-header" style="margin-bottom: 1rem;">
+        <h2 class="section-title" style="font-size: 1.5rem;">Menu Items</h2>
+      </div>
+      <div id="categoryTabs" class="menu-category-tabs">
+        <!-- Rendered dynamically by js/menu.js -->
+      </div>
+
+      <!-- Menu Grid -->
+      <div id="menuGrid" class="menu-grid">
+        <!-- Rendered dynamically by js/menu.js -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <div>© 2026 CloudBite Project. All rights reserved.</div>
+        <div>REST API: <code>GET /api/restaurants/:id/menu</code></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/menu.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Restaurants - CloudBite</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo">
+        <div class="logo-icon">🍔</div>
+        <div>Cloud<span class="highlight">Bite</span></div>
+      </a>
+
+      <button class="mobile-toggle" aria-label="Toggle navigation">☰</button>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="restaurants.html" class="nav-link active">Restaurants</a></li>
+        <li><a href="orders.html" class="nav-link">Order History</a></li>
+        <li>
+          <a href="cart.html" class="nav-link cart-link">
+            🛒 Cart <span class="cart-badge">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+
+      <!-- Header -->
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Explore Restaurants</h1>
+          <p class="section-subtitle">Find your favorite kitchen and discover tantalizing dishes</p>
+        </div>
+        <div id="restaurantCountLabel" style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);">
+          Loading restaurants...
+        </div>
+      </div>
+
+      <!-- Filter & Search Bar -->
+      <div class="filter-bar-container">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            id="restaurantSearchInput" 
+            placeholder="Search by restaurant name, cuisine, or location..." 
+            aria-label="Search restaurants"
+          />
+        </div>
+
+        <div class="filter-chips">
+          <span class="chip-label">Cuisines:</span>
+          <button class="chip active" data-cuisine="all">All Cuisines</button>
+          <button class="chip" data-cuisine="Indian">North Indian</button>
+          <button class="chip" data-cuisine="Italian">Italian</button>
+          <button class="chip" data-cuisine="Chinese">Chinese & Asian</button>
+          <button class="chip" data-cuisine="American">American / Fast Food</button>
+          <button class="chip" data-cuisine="Mexican">Mexican</button>
+          <button class="chip" data-cuisine="Dessert">Desserts & Cafe</button>
+        </div>
+      </div>
+
+      <!-- Restaurants Grid -->
+      <div id="restaurantsGrid" class="restaurants-grid">
+        <!-- Rendered dynamically by js/restaurants.js -->
+        <div class="loader-container" style="grid-column: 1 / -1;">
+          <div class="spinner"></div>
+          <p>Connecting to CloudBite REST API...</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <div>© 2026 CloudBite Project. All rights reserved.</div>
+        <div>REST API: <code>GET /api/restaurants</code></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/restaurants.js"></script>
+</body>
+</html>

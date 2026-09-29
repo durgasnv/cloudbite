@@ -1,0 +1,315 @@
+[
+  {
+    "id": 1,
+    "restaurantId": 1,
+    "name": "Hyderabadi Chicken Dum Biryani",
+    "description": "Fragrant basmati rice layered with spiced marinated chicken and slow-cooked in dum style.",
+    "category": "Main Course",
+    "price": 280,
+    "isVeg": false,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 2,
+    "restaurantId": 1,
+    "name": "Paneer Butter Masala",
+    "description": "Soft cottage cheese cubes cooked in a rich, creamy tomato and butter gravy.",
+    "category": "Main Course",
+    "price": 220,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 3,
+    "restaurantId": 1,
+    "name": "Tandoori Chicken Tikka",
+    "description": "Char-grilled boneless chicken chunks marinated in spiced yogurt and kasuri methi.",
+    "category": "Starters",
+    "price": 240,
+    "isVeg": false,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 4,
+    "restaurantId": 1,
+    "name": "Garlic Butter Naan",
+    "description": "Fluffy Indian flatbread baked in tandoor topped with minced garlic and melted butter.",
+    "category": "Main Course",
+    "price": 60,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 5,
+    "restaurantId": 1,
+    "name": "Sweet Mango Lassi",
+    "description": "Traditional thick chilled yogurt beverage blended with sweet Alphonso mango pulp.",
+    "category": "Beverages",
+    "price": 90,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=500&q=80"
+  },
+
+  {
+    "id": 6,
+    "restaurantId": 2,
+    "name": "Margherita Classic Pizza",
+    "description": "San Marzano tomato sauce, fresh buffalo mozzarella, aromatic basil, and olive oil.",
+    "category": "Main Course",
+    "price": 320,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 7,
+    "restaurantId": 2,
+    "name": "Creamy Fettuccine Alfredo",
+    "description": "Al dente pasta tossed in rich parmesan and garlic cream sauce with mushrooms.",
+    "category": "Main Course",
+    "price": 340,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 8,
+    "restaurantId": 2,
+    "name": "Crispy Cheesy Bruschetta",
+    "description": "Toasted sourdough slices topped with diced ripe tomatoes, garlic, basil, and balsamic glaze.",
+    "category": "Starters",
+    "price": 190,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 9,
+    "restaurantId": 2,
+    "name": "Classic Italian Tiramisu",
+    "description": "Espresso-soaked ladyfingers layered with mascarpone cream and dusted with cocoa.",
+    "category": "Desserts",
+    "price": 180,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 10,
+    "restaurantId": 2,
+    "name": "Sparkling Lemon Mint Mocktail",
+    "description": "Refreshing fizzy Italian soda with freshly squeezed lime, mint, and rock salt.",
+    "category": "Beverages",
+    "price": 110,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=500&q=80"
+  },
+
+  {
+    "id": 11,
+    "restaurantId": 3,
+    "name": "Steamed Chicken Dim Sums",
+    "description": "Delicate handmade translucent dumplings stuffed with seasoned minced chicken and scallions.",
+    "category": "Starters",
+    "price": 210,
+    "isVeg": false,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 12,
+    "restaurantId": 3,
+    "name": "Schezwan Hakka Noodles",
+    "description": "Wok-tossed noodles with crunchy bell peppers, cabbage, and fiery Schezwan chili sauce.",
+    "category": "Main Course",
+    "price": 230,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 13,
+    "restaurantId": 3,
+    "name": "Crispy Chilli Paneer Dry",
+    "description": "Crisp-fried cottage cheese cubes wok-tossed with green chilies, onions, and soy glaze.",
+    "category": "Starters",
+    "price": 220,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 14,
+    "restaurantId": 3,
+    "name": "Kung Pao Chicken Rice Bowl",
+    "description": "Tender chicken cooked with peanuts, dried red chilies, and vegetables served over jasmine rice.",
+    "category": "Main Course",
+    "price": 290,
+    "isVeg": false,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 15,
+    "restaurantId": 3,
+    "name": "Iced Jasmine Green Tea",
+    "description": "Brewed whole leaf green tea infused with aromatic jasmine blossoms over crushed ice.",
+    "category": "Beverages",
+    "price": 80,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=500&q=80"
+  },
+
+  {
+    "id": 16,
+    "restaurantId": 4,
+    "name": "Smoky BBQ Bacon Burger",
+    "description": "Gourmet grilled patty with melted cheddar, crispy bacon, caramelized onions, and BBQ sauce.",
+    "category": "Main Course",
+    "price": 260,
+    "isVeg": false,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 17,
+    "restaurantId": 4,
+    "name": "Crunchy Veggie Supreme Burger",
+    "description": "Crispy spiced vegetable and quinoa patty topped with pickled jalapeños and herb mayo.",
+    "category": "Main Course",
+    "price": 190,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 18,
+    "restaurantId": 4,
+    "name": "Loaded Peri Peri Cheese Fries",
+    "description": "Golden crinkle-cut fries dusted with peri peri seasoning and smothered in warm cheddar cheese.",
+    "category": "Starters",
+    "price": 160,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 19,
+    "restaurantId": 4,
+    "name": "Oreo Overload Thick Milkshake",
+    "description": "Rich vanilla ice cream blended with crushed Oreo cookies, chocolate syrup, and whipped cream.",
+    "category": "Beverages",
+    "price": 150,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=500&q=80"
+  },
+
+  {
+    "id": 20,
+    "restaurantId": 5,
+    "name": "Crispy Grilled Chicken Tacos",
+    "description": "Three soft corn tortillas loaded with grilled lime chicken, pico de gallo, and guacamole.",
+    "category": "Main Course",
+    "price": 270,
+    "isVeg": false,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 21,
+    "restaurantId": 5,
+    "name": "Cheesy Bean Burrito Bowl",
+    "description": "Mexican cilantro lime rice, black beans, sweet corn, salsa roja, and melted Monterey Jack.",
+    "category": "Main Course",
+    "price": 240,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 22,
+    "restaurantId": 5,
+    "name": "Supreme Loaded Nachos Platter",
+    "description": "Stone-ground tortilla chips piled high with warm queso, jalapeños, sour cream, and salsa.",
+    "category": "Starters",
+    "price": 210,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 23,
+    "restaurantId": 5,
+    "name": "Cinnamon Churros with Chocolate Dip",
+    "description": "Golden fried pastry dough coated in cinnamon sugar, served with warm dark chocolate dip.",
+    "category": "Desserts",
+    "price": 160,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1624300629298-e9de39c13be5?auto=format&fit=crop&w=500&q=80"
+  },
+
+  {
+    "id": 24,
+    "restaurantId": 6,
+    "name": "Belgian Chocolate Fudge Waffle",
+    "description": "Warm crispy waffle smothered in Belgian dark chocolate ganache and chocolate chips.",
+    "category": "Desserts",
+    "price": 220,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1562376552-0d160a2f238d?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 25,
+    "restaurantId": 6,
+    "name": "New York Baked Blueberry Cheesecake",
+    "description": "Creamy dense cheesecake on a graham cracker crust topped with tangy wild blueberry compote.",
+    "category": "Desserts",
+    "price": 240,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 26,
+    "restaurantId": 6,
+    "name": "Sizzling Walnut Brownie with Ice Cream",
+    "description": "Gooey chocolate walnut brownie served on a hot sizzler plate with vanilla bean gelato.",
+    "category": "Desserts",
+    "price": 190,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 27,
+    "restaurantId": 6,
+    "name": "Iced Caramel Macchiato",
+    "description": "Freshly pulled espresso shots layered with milk, vanilla syrup, and sweet caramel drizzle.",
+    "category": "Beverages",
+    "price": 160,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 28,
+    "restaurantId": 6,
+    "name": "Red Velvet Cupcake",
+    "description": "Soft red velvet sponge topped with luscious cream cheese frosting and cocoa crumble.",
+    "category": "Desserts",
+    "price": 110,
+    "isVeg": true,
+    "isAvailable": true,
+    "image": "https://images.unsplash.com/photo-1587668178277-295251f900ce?auto=format&fit=crop&w=500&q=80"
+  }
+]

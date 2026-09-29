@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order History - CloudBite</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo">
+        <div class="logo-icon">🍔</div>
+        <div>Cloud<span class="highlight">Bite</span></div>
+      </a>
+
+      <button class="mobile-toggle" aria-label="Toggle navigation">☰</button>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="restaurants.html" class="nav-link">Restaurants</a></li>
+        <li><a href="orders.html" class="nav-link active">Order History</a></li>
+        <li>
+          <a href="cart.html" class="nav-link cart-link">
+            🛒 Cart <span class="cart-badge">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container" style="max-width: 850px;">
+
+      <!-- Header -->
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Your Order History</h1>
+          <p class="section-subtitle">Track and review all previous food orders in real time (FR-08)</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="fetchOrders()">
+          🔄 Refresh Orders
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="ordersLoader" class="loader-container">
+        <div class="spinner"></div>
+        <p>Fetching your past orders...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyOrdersState" class="empty-state" style="display: none;">
+        <div class="empty-state-icon">📦</div>
+        <h2 class="empty-state-title">No orders placed yet</h2>
+        <p class="empty-state-text">You haven't placed any food orders on CloudBite yet. Start exploring our delicious menus!</p>
+        <a href="restaurants.html" class="btn btn-primary">Find Food Now →</a>
+      </div>
+
+      <!-- Orders List (FR-08) -->
+      <div id="ordersListContainer" class="orders-list">
+        <!-- Rendered dynamically by js/orders.js -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <div>© 2026 CloudBite Project. All rights reserved.</div>
+        <div>REST API: <code>GET /api/orders</code> & <code>PATCH /api/orders/:id/status</code></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/orders.js"></script>
+</body>
+</html>
