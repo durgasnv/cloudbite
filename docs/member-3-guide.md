@@ -14,6 +14,8 @@ Your main areas are:
 
 Do not add application features, credentials, real secrets, or cloud infrastructure unless the team agrees to expand the scope.
 
+Current branch status: the frontend and backend Dockerfiles, local Compose stack, and initial Minikube Deployments and Services are present. Runtime container and cluster validation is still pending. Monitoring is pending because the backend has no Prometheus metrics endpoint.
+
 ## Concepts you need first
 
 | Tool | What it does | What you will create |
@@ -56,7 +58,7 @@ docs/
   deployment-guide.md
 ```
 
-Use the actual application ports, image names, API paths, and environment variables agreed with Member 1. Do not guess them: confirm them before writing the final manifests.
+The current values are recorded in `docs/deployment-guide.md`. Keep those values synchronized with Docker and Kubernetes configuration when the application changes.
 
 ## Work in this order
 
@@ -70,9 +72,8 @@ The merged application provides these confirmed details:
 * The current backend stores restaurants, menus, and orders in JSON files under `server/data/`.
 * The backend does not yet expose Prometheus metrics or use a database connection variable.
 
-Before creating the final infrastructure files, agree on the remaining details with Member 1:
+The first deployment uses a separate NGINX frontend image that proxies `/api/` to the backend Service. Agree on these remaining details with Member 1 before adding database or metrics resources:
 
-* Whether the static frontend should use a separate web-server image and reverse proxy for `/api`.
 * The future Prometheus metrics endpoint and database integration plan.
 * Any new environment variables and their safe example values.
 * The database type and whether it will run locally, in Docker Compose, or in Kubernetes.
@@ -112,7 +113,7 @@ For both frontend and backend deployments:
 
 * Set explicit container ports.
 * Define CPU and memory requests and limits with values appropriate to the local cluster.
-* Use at least two replicas for stateless components when local resources permit; one replica is acceptable while developing on a small laptop, but document that limitation.
+* Use at least two replicas for stateless components when local resources permit. Keep the current JSON-backed backend at one replica until order storage is shared safely.
 * Add a readiness probe so traffic goes only to ready containers.
 * Add a liveness probe only after confirming the endpoint is safe to call repeatedly.
 * Set `imagePullPolicy` appropriately for local images versus registry images.

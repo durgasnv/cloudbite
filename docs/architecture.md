@@ -2,7 +2,7 @@
 
 ## Current application
 
-Today, one Express process on port `5000` serves the static files in `client/`, the REST API under `/api`, and `GET /api/health`. Restaurant, menu, and order data are stored in `server/data/*.json`. There is no database service or Prometheus metrics endpoint yet. The current Jenkinsfile runs checkout, dependency installation, syntax checks, tests, and an npm dependency audit; see [CI/CD integration status](ci-cd-integration.md).
+The application can still run as one Express process on port `5000`, serving the static files in `client/`, the REST API under `/api`, and `GET /api/health`. The new container setup separates static file serving into NGINX on port `8080`, which proxies `/api/` to Express. Restaurant, menu, and order data remain in `server/data/*.json`. There is no database service or Prometheus metrics endpoint yet. The current Jenkinsfile runs checkout, dependency installation, syntax checks, tests, and an npm dependency audit; see [CI/CD integration status](ci-cd-integration.md).
 
 ## Target deployment view
 
@@ -21,7 +21,7 @@ Backend Service -----> Backend Pods -----> Database
 Prometheus -----------> Grafana
 ```
 
-The frontend will be the user-facing web application. If deployed separately, its server must route browser requests for `/api` to the backend Service. The backend currently owns restaurant, menu, and order APIs; cart state is held in browser local storage. The backend will eventually connect to the selected database. Prometheus can scrape backend metrics after the endpoint is implemented; Grafana will visualize those metrics.
+The frontend NGINX server routes browser requests for `/api` to the backend Service. The backend owns restaurant, menu, and order APIs; cart state is held in browser local storage. The backend will eventually connect to the selected database. Prometheus can scrape backend metrics after the endpoint is implemented; Grafana will visualize those metrics.
 
 ## Kubernetes resources
 

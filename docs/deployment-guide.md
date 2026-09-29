@@ -1,6 +1,6 @@
 # Local Deployment Guide
 
-This guide will become the reproducible procedure for running CloudBite on a local Minikube cluster. The current application contract is recorded below. Image and deployment details still need to be implemented before the Minikube commands can be used for a demo.
+This guide describes the current local container and Minikube setup. Docker and Kubernetes commands still need to be executed on a machine with Docker Desktop integration, Minikube, and kubectl available.
 
 ## Prerequisites
 
@@ -18,17 +18,29 @@ Prometheus and Grafana can run in Kubernetes or outside the cluster. Use the app
 
 | Value | Expected value |
 | --- | --- |
-| Frontend image | Not created yet; current frontend is static HTML/CSS/JavaScript in `client/` |
-| Backend image | Not created yet; root `npm start` runs `server/server.js` |
-| Frontend container port | To be set by the frontend Dockerfile and reverse proxy |
+| Frontend image | `cloudbite-frontend:local` from `docker/frontend.Dockerfile` |
+| Backend image | `cloudbite-backend:local` from `docker/backend.Dockerfile` |
+| Frontend container port | `8080` |
 | Backend container port | `5000` by default; configurable with `PORT` |
 | Backend health endpoint | `GET /api/health` |
 | Backend metrics endpoint | Not implemented yet |
 | Database connection variable | None; the application currently reads and writes `server/data/*.json` |
 
-The current Express process serves both `client/` and `/api` from the same origin. A separate frontend image must proxy `/api` to the backend Service or the frontend must use a configurable API URL. The existing frontend code falls back to `http://localhost:5000/api` on other ports; that address refers to the visitor's machine and will not work reliably in Kubernetes.
+The frontend NGINX configuration proxies `/api/` to the `cloudbite-backend` Service. Browser code calls the same-origin `/api` path, so no cluster address appears in the browser.
 
 Orders are currently stored in a JSON file. Do not use more than one backend replica or claim durable orders until the team agrees on database or shared storage integration.
+
+## Try the two containers first
+
+```bash
+docker compose -f docker/compose.yaml up --build -d
+curl -f http://localhost:8080/health
+curl -f http://localhost:8080/api/health
+curl -f http://localhost:8080/api/restaurants
+docker compose -f docker/compose.yaml down
+```
+
+See [the container guide](../docker/README.md) for logs and the current storage limitation.
 
 ## Start the local cluster
 
@@ -39,7 +51,7 @@ kubectl cluster-info
 
 ## Build and load images
 
-From the repository root, build the images using the final Dockerfiles and load them into Minikube:
+From the repository root, build the images and load them into Minikube:
 
 ```bash
 docker build -f docker/backend.Dockerfile -t cloudbite-backend:local .
@@ -48,32 +60,29 @@ minikube image load cloudbite-backend:local
 minikube image load cloudbite-frontend:local
 ```
 
-Use image names and tags that match the Kubernetes Deployment manifests.
+The image names and tags above match the Kubernetes Deployments. Rebuild and reload both images after source changes.
 
 ## Configure application values
 
-Copy the repository's environment template if one exists, then supply values locally. Never commit the resulting `.env` file or real Secret YAML.
-
-The current application has no database credentials or other required runtime secrets. Create Kubernetes Secrets only when the application adds a real sensitive setting. For example, a future database integration could use:
-
-```bash
-kubectl create namespace cloudbite
-kubectl create secret generic cloudbite-secrets \
-  --namespace cloudbite \
-  --from-literal=EXAMPLE_SECRET='replace-with-local-value'
-```
-
-The final secret name and key must match the manifests. Do not run this example unchanged in a finished setup.
+The backend ConfigMap supplies `NODE_ENV=production` and `PORT=5000`. The current application has no database credentials or other required runtime secrets. Add a Kubernetes Secret only after a real sensitive setting is introduced; never commit its value.
 
 ## Deploy and verify
 
+Apply the namespace, configuration, and Services before the Deployments. NGINX resolves the backend Service name when it starts.
+
 ```bash
-kubectl apply -f kubernetes/
-kubectl get all -n cloudbite
-kubectl get pods -n cloudbite -w
+kubectl apply -f kubernetes/namespace.yaml
+kubectl apply -f kubernetes/configmap.yaml
+kubectl apply -f kubernetes/backend-service.yaml
+kubectl apply -f kubernetes/frontend-service.yaml
+kubectl apply -f kubernetes/backend-deployment.yaml
+kubectl apply -f kubernetes/frontend-deployment.yaml
+kubectl rollout status deployment/cloudbite-backend -n cloudbite
+kubectl rollout status deployment/cloudbite-frontend -n cloudbite
+kubectl get pods,services -n cloudbite
 ```
 
-After every pod reports `Running` and `Ready`, inspect the services:
+After every pod reports `Running` and `Ready`, inspect the services and logs:
 
 ```bash
 kubectl get services -n cloudbite
@@ -81,25 +90,24 @@ kubectl logs deployment/cloudbite-backend -n cloudbite
 kubectl logs deployment/cloudbite-frontend -n cloudbite
 ```
 
-To access a NodePort service locally after the service name is confirmed:
+The frontend Service is internal to the cluster. Use port forwarding to access it locally:
 
 ```bash
-minikube service SERVICE_NAME -n cloudbite
+kubectl port-forward -n cloudbite service/cloudbite-frontend 8080:8080
 ```
+
+In another terminal, check `http://localhost:8080/health`, `http://localhost:8080/api/health`, and `http://localhost:8080/api/restaurants`.
 
 ## Monitoring verification
 
-1. Deploy the documented Prometheus and Grafana configuration.
-2. Open Prometheus and confirm the CloudBite backend target reports `UP`.
-3. Open Grafana, add or select the Prometheus data source, and import `monitoring/grafana/cloudbite-dashboard.json`.
-4. Generate a few application requests and confirm the dashboard changes.
+Prometheus and Grafana resources are still pending. The backend does not expose Prometheus-format metrics yet, so there is no application scrape target to mark `UP`. Coordinate the metrics contract before adding the target and dashboard.
 
 ## Clean up
 
 Delete only CloudBite resources:
 
 ```bash
-kubectl delete -f kubernetes/
+kubectl delete namespace cloudbite
 ```
 
 Delete the entire local cluster only when it is no longer needed:

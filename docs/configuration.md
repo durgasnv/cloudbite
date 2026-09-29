@@ -22,7 +22,7 @@ Only `PORT` is read by the current backend, which defaults to `5000`; `dotenv` l
 | `DATABASE_USER` | Future backend integration | Usually | Candidate account name, if separate from URL. |
 | `DATABASE_PASSWORD` | Future backend integration | Yes | Candidate password, if separate from URL. |
 | `JWT_SECRET` | Future authentication | Yes | Candidate signing secret. |
-| `API_BASE_URL` | Future frontend configuration | No | Candidate replacement for the current hard-coded browser API fallback in `client/js/app.js`. |
+| `API_BASE_URL` | Future frontend configuration | No | Candidate only if same-origin `/api` routing is replaced. The current frontend does not read this variable. |
 
 ## Local development
 

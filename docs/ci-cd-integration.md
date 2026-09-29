@@ -33,7 +33,7 @@ The end-to-end requirements call for SonarQube analysis, secret scanning, two Do
 | --- | --- |
 | SonarQube quality gate | Jenkins SonarQube installation, scanner, project key, and credentials. |
 | Secret scan | Gitleaks or equivalent installed on the Jenkins agent and configured to fail on findings. |
-| Frontend/backend image builds | Dockerfiles and the final frontend-to-backend routing contract. |
+| Frontend/backend image builds | Dockerfiles and same-origin routing are in place; Jenkins still needs a Docker-capable agent and image build stages. |
 | Image vulnerability scan | Trivy installed on the Jenkins agent and image tags shared with the build stage. |
 | Kubernetes deployment | Complete manifests, image distribution strategy, kubeconfig credentials, and a clear deployment branch policy. |
 | Monitoring | A backend Prometheus metrics endpoint plus Prometheus and Grafana resources. |
@@ -49,4 +49,4 @@ Do not report a CI success as a deployment success. The release stages should fa
 * There is no `/metrics` endpoint yet.
 * Restaurant and menu data, and order records, currently use JSON files in `server/data/`; there is no database service yet.
 
-These facts should be used when designing the first Docker image. A separate frontend image will need same-origin `/api` routing through a reverse proxy or an agreed frontend configuration change. JSON order storage is not safe for multiple backend replicas and is not persistent across pod replacement without a shared storage design.
+The new Dockerfiles use these facts. The frontend image proxies `/api/` to the backend Service. JSON order storage is not safe for multiple backend replicas and is not persistent across pod replacement without a shared storage design.
