@@ -2,10 +2,8 @@
  * CloudBite - Shared Application Utilities & Cart Management
  */
 
-// API Base URL Configuration
-const API_BASE_URL = window.location.origin.includes('5000') 
-  ? '/api' 
-  : 'http://localhost:5000/api';
+// Both Express and the container frontend expose the API on this origin.
+const API_BASE_URL = '/api';
 
 const CART_STORAGE_KEY = 'cloudbite_cart';
 
