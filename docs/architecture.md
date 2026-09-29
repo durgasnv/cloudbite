@@ -1,6 +1,10 @@
 # CloudBite Architecture
 
-## Deployment view
+## Current application
+
+Today, one Express process on port `5000` serves the static files in `client/`, the REST API under `/api`, and `GET /api/health`. Restaurant, menu, and order data are stored in `server/data/*.json`. There is no database service or Prometheus metrics endpoint yet. The current Jenkinsfile runs checkout, dependency installation, syntax checks, tests, and an npm dependency audit; see [CI/CD integration status](ci-cd-integration.md).
+
+## Target deployment view
 
 ```text
 Browser
@@ -17,7 +21,7 @@ Backend Service -----> Backend Pods -----> Database
 Prometheus -----------> Grafana
 ```
 
-The frontend is the user-facing web application. It calls the backend through the backend Service rather than a pod IP. The backend owns restaurant, cart, and order APIs and connects to the selected database. Prometheus scrapes metrics exposed by the backend; Grafana visualizes those metrics.
+The frontend will be the user-facing web application. If deployed separately, its server must route browser requests for `/api` to the backend Service. The backend currently owns restaurant, menu, and order APIs; cart state is held in browser local storage. The backend will eventually connect to the selected database. Prometheus can scrape backend metrics after the endpoint is implemented; Grafana will visualize those metrics.
 
 ## Kubernetes resources
 
@@ -35,7 +39,7 @@ The frontend is the user-facing web application. It calls the backend through th
 
 * All CloudBite resources should use the `cloudbite` namespace.
 * Pods are replaceable. Never configure one component to call another using a pod IP.
-* Use the backend Service name from within the frontend deployment.
+* Use the backend Service name in the frontend reverse proxy; browser JavaScript cannot resolve Kubernetes Service DNS names.
 * A container must listen on `0.0.0.0`, not only `localhost`, so Kubernetes can reach it.
 * Ports, service names, environment variables, health paths, and metric paths are application-contract values. Record their final values in `docs/deployment-guide.md` after agreeing them with Member 1.
 

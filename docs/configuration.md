@@ -10,19 +10,19 @@ CloudBite configuration must be supplied at runtime. Do not hard-code values in 
 | Sensitive configuration | Database password, JWT secret, API token | Kubernetes Secret or uncommitted local `.env` file |
 | Build configuration | Node version, build command | Dockerfile or package configuration |
 
-## Variables to agree with Member 1
+## Current application variables and future candidates
 
-The names below are examples, not the final application contract. Confirm the exact names and values before creating deployment manifests.
+Only `PORT` is read by the current backend, which defaults to `5000`; `dotenv` loads local `.env` values if present. The other names below are future candidates and must not be added to manifests as if the application already consumes them.
 
 | Variable | Consumed by | Sensitive? | Purpose |
 | --- | --- | --- | --- |
-| `NODE_ENV` | Frontend and backend | No | Selects development or production behavior. |
-| `PORT` | Frontend or backend | No | Container listen port. |
-| `DATABASE_URL` | Backend | Yes | Database connection string. |
-| `DATABASE_USER` | Backend | Usually | Database account name, if separate from URL. |
-| `DATABASE_PASSWORD` | Backend | Yes | Database password, if separate from URL. |
-| `JWT_SECRET` | Backend | Yes | Future authentication signing secret. |
-| `API_BASE_URL` | Frontend | No | Backend API location used by the frontend. |
+| `PORT` | Backend | No | Current Express listen port; defaults to `5000`. |
+| `NODE_ENV` | Future runtime configuration | No | Candidate for development or production behavior. |
+| `DATABASE_URL` | Future backend integration | Yes | Candidate database connection string. |
+| `DATABASE_USER` | Future backend integration | Usually | Candidate account name, if separate from URL. |
+| `DATABASE_PASSWORD` | Future backend integration | Yes | Candidate password, if separate from URL. |
+| `JWT_SECRET` | Future authentication | Yes | Candidate signing secret. |
+| `API_BASE_URL` | Future frontend configuration | No | Candidate replacement for the current hard-coded browser API fallback in `client/js/app.js`. |
 
 ## Local development
 

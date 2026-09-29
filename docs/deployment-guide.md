@@ -1,6 +1,6 @@
 # Local Deployment Guide
 
-This guide will become the reproducible procedure for running CloudBite on a local Minikube cluster. Complete the values marked **To be confirmed** with Member 1 before relying on this guide for a demo.
+This guide will become the reproducible procedure for running CloudBite on a local Minikube cluster. The current application contract is recorded below. Image and deployment details still need to be implemented before the Minikube commands can be used for a demo.
 
 ## Prerequisites
 
@@ -18,13 +18,17 @@ Prometheus and Grafana can run in Kubernetes or outside the cluster. Use the app
 
 | Value | Expected value |
 | --- | --- |
-| Frontend image | **To be confirmed** |
-| Backend image | **To be confirmed** |
-| Frontend container port | **To be confirmed** |
-| Backend container port | **To be confirmed** |
-| Backend health endpoint | **To be confirmed** |
-| Backend metrics endpoint | **To be confirmed** |
-| Database connection variable | **To be confirmed** |
+| Frontend image | Not created yet; current frontend is static HTML/CSS/JavaScript in `client/` |
+| Backend image | Not created yet; root `npm start` runs `server/server.js` |
+| Frontend container port | To be set by the frontend Dockerfile and reverse proxy |
+| Backend container port | `5000` by default; configurable with `PORT` |
+| Backend health endpoint | `GET /api/health` |
+| Backend metrics endpoint | Not implemented yet |
+| Database connection variable | None; the application currently reads and writes `server/data/*.json` |
+
+The current Express process serves both `client/` and `/api` from the same origin. A separate frontend image must proxy `/api` to the backend Service or the frontend must use a configurable API URL. The existing frontend code falls back to `http://localhost:5000/api` on other ports; that address refers to the visitor's machine and will not work reliably in Kubernetes.
+
+Orders are currently stored in a JSON file. Do not use more than one backend replica or claim durable orders until the team agrees on database or shared storage integration.
 
 ## Start the local cluster
 
@@ -50,7 +54,7 @@ Use image names and tags that match the Kubernetes Deployment manifests.
 
 Copy the repository's environment template if one exists, then supply values locally. Never commit the resulting `.env` file or real Secret YAML.
 
-Create runtime Kubernetes secrets from local values only after the expected keys are confirmed:
+The current application has no database credentials or other required runtime secrets. Create Kubernetes Secrets only when the application adds a real sensitive setting. For example, a future database integration could use:
 
 ```bash
 kubectl create namespace cloudbite

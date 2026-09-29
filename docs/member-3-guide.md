@@ -62,15 +62,22 @@ Use the actual application ports, image names, API paths, and environment variab
 
 ### 1. Agree on the application contract
 
-Before creating infrastructure files, get these details from Member 1:
+The merged application provides these confirmed details:
 
-* Frontend build command, start command, and port.
-* Backend start command, port, health endpoint, and metrics endpoint.
-* Required environment variables and their safe example values.
-* Database type, connection-variable name, and whether the database will run locally, in Docker Compose, or in Kubernetes.
-* The expected frontend-to-backend URL in development and in Kubernetes.
+* Root `npm start` runs the Express backend and serves the static `client/` frontend.
+* The backend uses port `5000` by default and has a lightweight `GET /api/health` endpoint.
+* API requests use `/api`; browser cart state is in local storage.
+* The current backend stores restaurants, menus, and orders in JSON files under `server/data/`.
+* The backend does not yet expose Prometheus metrics or use a database connection variable.
 
-Record the agreed values in `docs/deployment-guide.md`. If an endpoint does not exist, do not invent one; ask Member 1 to add it or agree on a temporary approach.
+Before creating the final infrastructure files, agree on the remaining details with Member 1:
+
+* Whether the static frontend should use a separate web-server image and reverse proxy for `/api`.
+* The future Prometheus metrics endpoint and database integration plan.
+* Any new environment variables and their safe example values.
+* The database type and whether it will run locally, in Docker Compose, or in Kubernetes.
+
+Record the agreed values in `docs/deployment-guide.md`. Do not configure probes or metrics scrapes against routes that do not exist.
 
 ### 2. Containerize each application
 
