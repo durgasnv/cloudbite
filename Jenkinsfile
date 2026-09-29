@@ -58,9 +58,9 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'npm audit --audit-level=high --omit=dev'
+                        sh 'npm audit --audit-level=high'
                     } else {
-                        bat 'npm audit --audit-level=high --omit=dev'
+                        bat 'npm audit --audit-level=high'
                     }
                 }
             }

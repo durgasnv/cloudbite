@@ -10,7 +10,7 @@ The merged `Jenkinsfile` currently provides a reproducible CI check for the exis
 | Install Dependencies | `npm ci` at the repository root | Stops if `package-lock.json` is missing or differs from `package.json`. |
 | Code Quality | `npm run check` | Stops on JavaScript syntax errors. This is a baseline check, not SonarQube analysis. |
 | Automated Tests | `npm test` | Stops if the API test fails. |
-| Dependency Security Scan | `npm audit --audit-level=high --omit=dev` | Stops on high or critical production dependency findings. |
+| Dependency Security Scan | `npm audit --audit-level=high` | Stops on high or critical dependency findings. |
 
 The Jenkins agent needs Node.js 20 or newer and npm. The pipeline uses `sh` on Unix agents and `bat` on Windows agents. It polls source control every five minutes; for pull request builds, configure a Jenkins multibranch job and GitHub webhook or branch discovery. A pull request trigger is a Jenkins job setting, not something the Jenkinsfile alone can guarantee.
 
@@ -20,7 +20,7 @@ Run the same checks locally from the repository root:
 npm ci
 npm run check
 npm test
-npm audit --audit-level=high --omit=dev
+npm audit --audit-level=high
 ```
 
 The root `package.json` and `package-lock.json` are the CI install contract. The separate `server/package.json` is not installed by this pipeline; keep dependency changes synchronized or consolidate manifests with the application owner before containerizing the backend.
