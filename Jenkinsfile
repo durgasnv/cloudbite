@@ -1,37 +1,78 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+        timestamps()
+    }
+
+    // A multibranch job can also use GitHub webhooks for push and PR builds.
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+
     stages {
+        stage('Source Checkout') {
+            steps {
+                checkout scm
+            }
+        }
 
         stage('Install Dependencies') {
             steps {
-                echo 'Installing dependencies...'
-                bat 'npm ci'
+                script {
+                    if (isUnix()) {
+                        sh 'npm ci'
+                    } else {
+                        bat 'npm ci'
+                    }
+                }
             }
         }
 
-        stage('Run Tests') {
+        stage('Code Quality') {
             steps {
-                echo 'Running automated tests...'
-                bat 'npm test'
+                script {
+                    if (isUnix()) {
+                        sh 'npm run check'
+                    } else {
+                        bat 'npm run check'
+                    }
+                }
             }
         }
 
-        stage('Security Audit') {
+        stage('Automated Tests') {
             steps {
-                echo 'Checking dependencies for high-severity vulnerabilities...'
-                bat 'npm audit --audit-level=high'
+                script {
+                    if (isUnix()) {
+                        sh 'npm test'
+                    } else {
+                        bat 'npm test'
+                    }
+                }
+            }
+        }
+
+        stage('Dependency Security Scan') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'npm audit --audit-level=high --omit=dev'
+                    } else {
+                        bat 'npm audit --audit-level=high --omit=dev'
+                    }
+                }
             }
         }
     }
 
     post {
         success {
-            echo 'CI Pipeline completed successfully!'
+            echo 'CloudBite CI checks passed.'
         }
-
         failure {
-            echo 'CI Pipeline failed. Check the logs.'
+            echo 'CloudBite CI checks failed; review the failed stage.'
         }
     }
 }
