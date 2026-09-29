@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: cloudbite
+
+resources:
+  - kubernetes/blackbox-deployment.yaml
+  - kubernetes/blackbox-service.yaml
+  - kubernetes/prometheus-deployment.yaml
+  - kubernetes/prometheus-service.yaml
+  - kubernetes/grafana-deployment.yaml
+  - kubernetes/grafana-service.yaml
+
+configMapGenerator:
+  - name: cloudbite-blackbox-config
+    files:
+      - blackbox.yml=prometheus/blackbox.yml
+  - name: cloudbite-prometheus-config
+    files:
+      - prometheus.yml=prometheus/prometheus.yml
+  - name: cloudbite-grafana-datasource
+    files:
+      - prometheus.yml=grafana/provisioning/datasources/prometheus.yml
+  - name: cloudbite-grafana-dashboard-provider
+    files:
+      - cloudbite.yml=grafana/provisioning/dashboards/cloudbite.yml
+  - name: cloudbite-grafana-dashboard
+    files:
+      - cloudbite-dashboard.json=grafana/cloudbite-dashboard.json
