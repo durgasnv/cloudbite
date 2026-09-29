@@ -1,32 +1,33 @@
 # CloudBite Grafana Dashboard
 
-This directory will hold `cloudbite-dashboard.json`, an exportable Grafana dashboard. Keeping the JSON in Git means another team member can import the same dashboard instead of recreating it manually.
+This directory contains the version-controlled `cloudbite-dashboard.json` and Grafana provisioning files. The dashboard is loaded automatically by the Compose and Minikube monitoring stacks described in [the monitoring guide](../README.md).
 
-## Before importing
+## What is currently shown
 
-1. Prometheus must be running and scraping the CloudBite backend successfully.
-2. In Prometheus, confirm the CloudBite target reports `UP`.
-3. Add Prometheus as a Grafana data source. Give it a stable name such as `Prometheus`.
+| Panel | Prometheus metric |
+| --- | --- |
+| Frontend availability | `probe_success` for `/health` |
+| Backend availability | `probe_success` for `/api/health` |
+| Health probe duration | `probe_duration_seconds` for both endpoints |
 
-If Prometheus has no CloudBite data, dashboard panels will be empty even when Grafana is configured correctly.
+These panels use Blackbox Exporter probes. They do not show request rate, errors, CPU, memory, or container restarts yet. Those need application instrumentation or additional cluster metric sources.
 
-## Import procedure
+## Manual import, if provisioning is not used
 
 1. Open Grafana.
 2. Select **Dashboards** → **New** → **Import**.
 3. Upload `cloudbite-dashboard.json` from this directory.
-4. Select the Prometheus data source.
+4. Select a Prometheus data source with UID `prometheus`, or update the panel data source references.
 5. Save the dashboard.
 
-After modifying a dashboard, export its JSON with the data source represented as a variable or placeholder where possible. Replace `cloudbite-dashboard.json`, review the diff for accidental URLs or tokens, and commit it with a descriptive `monitor:` message.
+After modifying a dashboard, export its JSON, review the diff for accidental URLs or tokens, and commit it with a descriptive `monitor:` message. Provisioned dashboards are overwritten from the file on restart; make persistent changes in Git.
 
-## Required dashboard signals
+## Later dashboard signals
 
-The final dashboard should include panels for:
+After the relevant metrics are available, add panels for:
 
 | Signal | What it answers |
 | --- | --- |
-| Backend availability | Is the Prometheus scrape target up? |
 | Request rate | Is the API receiving traffic? |
 | Error rate | Are requests failing? |
 | Request latency | Are requests getting slower? |
@@ -34,7 +35,7 @@ The final dashboard should include panels for:
 | Memory usage | Are containers approaching their memory limit? |
 | Container restarts | Is the workload unstable? |
 
-Application request metrics require backend instrumentation. Kubernetes/container metrics may require the chosen Prometheus setup to scrape kubelet or cAdvisor metrics. Confirm the actual metric names before creating queries; do not copy example queries blindly.
+Application request metrics require backend instrumentation. Kubernetes/container metrics require an appropriate cluster metric source. Confirm actual metric names before writing queries.
 
 ## Security rules
 

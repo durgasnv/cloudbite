@@ -12,7 +12,7 @@ minikube version
 kubectl version --client
 ```
 
-Prometheus and Grafana can run in Kubernetes or outside the cluster. Use the approach documented by the monitoring configuration once it is added.
+Prometheus and Grafana can run in Docker Compose or in the CloudBite namespace. The setup commands are in [the monitoring guide](../monitoring/README.md).
 
 ## Application contract to confirm
 
@@ -100,7 +100,9 @@ In another terminal, check `http://localhost:8080/health`, `http://localhost:808
 
 ## Monitoring verification
 
-Prometheus and Grafana resources are still pending. The backend does not expose Prometheus-format metrics yet, so there is no application scrape target to mark `UP`. Coordinate the metrics contract before adding the target and dashboard.
+After the application is Ready, follow [the monitoring guide](../monitoring/README.md) to create a local Grafana password and apply the monitoring Kustomization. Confirm that both `cloudbite_health` targets are `UP` in Prometheus and that the **CloudBite Health** dashboard shows two available endpoints.
+
+This first dashboard shows endpoint availability and probe time. The backend still has no Prometheus-format `/metrics` endpoint, so request and resource metrics are not available yet.
 
 ## Clean up
 

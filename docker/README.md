@@ -35,6 +35,8 @@ docker compose -f docker/compose.yaml down
 
 Orders are currently written to `server/data/orders.json` inside the backend container. They are lost when that container is recreated. Do not use this stack as durable order storage; the application needs a database before multi-replica backend deployment.
 
+To start the optional Prometheus and Grafana stack alongside the application, follow [the monitoring guide](../monitoring/README.md).
+
 ## Image contract
 
 | Image | Dockerfile | Internal port | Health path |

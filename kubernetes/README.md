@@ -7,7 +7,7 @@ This directory contains the first Minikube Deployments and Services for CloudBit
 * A running Minikube cluster.
 * `kubectl` configured to access that cluster.
 * Frontend and backend images built and loaded into Minikube.
-* No runtime Secret is required by the current application.
+* No runtime Secret is required by the current application. The optional Grafana monitoring Deployment needs a local admin-password Secret.
 
 ## Intended resources
 
@@ -20,7 +20,7 @@ frontend-deployment.yaml
 frontend-service.yaml
 ```
 
-Database manifests will be added only after the application supports a database. Prometheus and Grafana resources are not part of this initial deployment.
+Database manifests will be added only after the application supports a database. Prometheus, Blackbox Exporter, and Grafana are deployed separately with `kubectl apply -k monitoring/` after the application is Ready; see [the monitoring guide](../monitoring/README.md).
 
 ## Recommended application order
 

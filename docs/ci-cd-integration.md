@@ -36,7 +36,7 @@ The end-to-end requirements call for SonarQube analysis, secret scanning, two Do
 | Frontend/backend image builds | Dockerfiles and same-origin routing are in place; Jenkins still needs a Docker-capable agent and image build stages. |
 | Image vulnerability scan | Trivy installed on the Jenkins agent and image tags shared with the build stage. |
 | Kubernetes deployment | Complete manifests, image distribution strategy, kubeconfig credentials, and a clear deployment branch policy. |
-| Monitoring | A backend Prometheus metrics endpoint plus Prometheus and Grafana resources. |
+| Monitoring | Health-probe Prometheus and Grafana resources are present. Request, CPU, memory, and restart metrics still need backend instrumentation or cluster metric sources. |
 
 Do not report a CI success as a deployment success. The release stages should fail closed when a required scanner or deployment prerequisite is missing, and deployment must run only after all required checks pass.
 

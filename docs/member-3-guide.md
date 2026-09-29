@@ -14,7 +14,7 @@ Your main areas are:
 
 Do not add application features, credentials, real secrets, or cloud infrastructure unless the team agrees to expand the scope.
 
-Current branch status: the frontend and backend Dockerfiles, local Compose stack, and initial Minikube Deployments and Services are present. Runtime container and cluster validation is still pending. Monitoring is pending because the backend has no Prometheus metrics endpoint.
+Current branch status: the frontend and backend Dockerfiles, local Compose stack, Minikube workloads, and health-probe monitoring configuration are present. Runtime container and cluster validation is still pending. Request and resource metrics need more instrumentation or cluster metric sources.
 
 ## Concepts you need first
 
@@ -145,17 +145,16 @@ or build directly against Minikube's container runtime. For the first implementa
 
 ### 5. Add monitoring
 
-Prometheus needs a metrics endpoint to scrape. Prefer a backend endpoint such as `/metrics` in Prometheus format. Coordinate its implementation with Member 1 if it does not exist.
+The current monitoring stack uses Blackbox Exporter to probe `/health` and `/api/health`; it does not depend on a backend `/metrics` route. Start it using `monitoring/README.md`, then verify both `cloudbite_health` targets are `UP` in Prometheus and the **CloudBite Health** dashboard is populated.
 
-Configure Prometheus to discover or target the backend service, then verify that the target is `UP` in Prometheus. Create a Grafana dashboard that answers these questions:
+For the next monitoring increment, coordinate backend request instrumentation and a Prometheus-format `/metrics` endpoint with Member 1. Add Kubernetes/container metric sources before creating panels for:
 
-* Is the backend reachable and healthy?
 * How many HTTP requests are received and how many fail?
 * What is request latency, if the application exposes it?
 * What CPU and memory are used by the application containers?
 * Have any containers restarted?
 
-Export the dashboard JSON to `monitoring/grafana/` so it can be imported by another team member without manually rebuilding it.
+Keep the Grafana dashboard JSON in `monitoring/grafana/` so another team member can reproduce it.
 
 ### 6. Write the deployment guide
 
