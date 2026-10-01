@@ -2,7 +2,7 @@
 
 ## Current application
 
-The application can still run as one Express process on port `5000`, serving the static files in `client/`, the REST API under `/api`, and `GET /api/health`. The container setup separates static file serving into NGINX on port `8080`, which proxies `/api/` to Express. Restaurant, menu, and order data remain in `server/data/*.json`. Blackbox Exporter probes the frontend and backend health routes for Prometheus; the backend has no native Prometheus metrics endpoint yet. The Jenkinsfile defines quality, secret, dependency, and image gates before a main-branch Minikube deployment; see [CI/CD integration](ci-cd-integration.md). The application-owner dependencies for durable orders and request metrics are in the [Member 1 handoff](member-1-handoff.md).
+The application can still run as one Express process on port `5000`, serving the static files in `client/`, the REST API under `/api`, and `GET /api/health`. The container setup separates static file serving into NGINX on port `8080`, which proxies `/api/` to Express. Restaurant, menu, and order data remain in `server/data/*.json`. Blackbox Exporter probes the frontend and backend health routes for Prometheus; the backend has no native Prometheus metrics endpoint yet. The Jenkinsfile defines quality, secret, dependency, and image gates before a main-branch Minikube deployment; see [CI/CD integration](ci-cd-integration.md). Frontend integration and safety recommendations are in the [Member 1 frontend handoff](member-1-handoff.md).
 
 ## Target deployment view
 

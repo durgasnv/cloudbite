@@ -6,4 +6,4 @@ The project addresses a common software-delivery problem: security checks are of
 
 Successful `main` builds are configured to deploy the two scanned images to Minikube. Prometheus and Grafana provide endpoint-health monitoring. These services still require a configured Jenkins/Minikube environment; live deployment has not been verified here. The setup and current limitations are recorded in [the CI/CD integration guide](docs/ci-cd-integration.md) and [monitoring guide](monitoring/README.md).
 
-The application work still needed for durable orders, secure checkout, and request metrics is summarized in the [Member 1 handoff](docs/member-1-handoff.md).
+The recommended frontend changes for Member 1—safe rendering, order privacy, checkout behavior, and UI tests—are in the [Member 1 frontend handoff](docs/member-1-handoff.md).
