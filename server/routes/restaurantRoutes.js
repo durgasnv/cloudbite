@@ -20,10 +20,49 @@ async function readJsonFile(filePath) {
   }
 }
 
-// GET /api/restaurants - Get all restaurants (FR-01)
+// GET /api/restaurants - Get all restaurants with optional search (restaurant or food) and cuisine filter (FR-01)
 router.get('/', async (req, res, next) => {
   try {
-    const restaurants = await readJsonFile(restaurantsFilePath);
+    const { search, cuisine } = req.query;
+    let restaurants = await readJsonFile(restaurantsFilePath);
+    let menuItems = [];
+
+    if (search) {
+      try {
+        menuItems = await readJsonFile(menuFilePath);
+      } catch (e) {
+        menuItems = [];
+      }
+      const query = search.toLowerCase().trim();
+
+      restaurants = restaurants.filter(restaurant => {
+        const matchesRestaurant =
+          restaurant.name.toLowerCase().includes(query) ||
+          restaurant.cuisine.toLowerCase().includes(query) ||
+          restaurant.location.toLowerCase().includes(query);
+
+        const matchingDishes = menuItems.filter(
+          item => item.restaurantId === restaurant.id &&
+            (item.name.toLowerCase().includes(query) ||
+             (item.description && item.description.toLowerCase().includes(query)) ||
+             (item.category && item.category.toLowerCase().includes(query)))
+        );
+
+        if (matchingDishes.length > 0) {
+          restaurant.matchedDishes = matchingDishes.map(d => d.name);
+        }
+
+        return matchesRestaurant || matchingDishes.length > 0;
+      });
+    }
+
+    if (cuisine && cuisine.toLowerCase() !== 'all') {
+      const cuisineQuery = cuisine.toLowerCase().trim();
+      restaurants = restaurants.filter(restaurant =>
+        restaurant.cuisine.toLowerCase().includes(cuisineQuery)
+      );
+    }
+
     res.status(200).json({
       success: true,
       count: restaurants.length,
