@@ -1,6 +1,6 @@
 # CloudBite Monitoring
 
-This first monitoring setup checks whether the frontend `/health` and backend `/api/health` endpoints respond with HTTP 200. Prometheus asks Blackbox Exporter to probe both URLs every 15 seconds. Grafana displays each endpoint's availability and probe duration.
+This setup checks whether the frontend `/health` and backend `/api/health` endpoints respond with HTTP 200. Prometheus asks Blackbox Exporter to probe both URLs every 15 seconds. Grafana displays each endpoint's availability and probe duration. In Kubernetes, a namespace-scoped kube-state-metrics instance also exposes application replica availability and container restart counts.
 
 ## Start with Docker Compose
 
@@ -43,6 +43,7 @@ Deploy monitoring with Kustomize, which generates ConfigMaps from the files in t
 ```bash
 kubectl apply -k monitoring/
 kubectl rollout status deployment/blackbox-exporter -n cloudbite
+kubectl rollout status deployment/kube-state-metrics -n cloudbite
 kubectl rollout status deployment/prometheus -n cloudbite
 kubectl rollout status deployment/grafana -n cloudbite
 ```
@@ -54,7 +55,7 @@ kubectl port-forward -n cloudbite service/prometheus 9090:9090
 kubectl port-forward -n cloudbite service/grafana 3000:3000
 ```
 
-Check `http://localhost:9090/targets`, then open the provisioned dashboard at `http://localhost:3000`.
+Check `http://localhost:9090/targets`: `cloudbite_health`, `blackbox_exporter`, and `kube_state_metrics` should be `UP`. In Grafana, open **CloudBite Health** for endpoint probes and **CloudBite Kubernetes** for replica and restart metrics. The Kubernetes-only dashboard is not mounted in the Compose stack.
 
 ## What the dashboard proves
 
@@ -62,7 +63,9 @@ Check `http://localhost:9090/targets`, then open the provisioned dashboard at `h
 | --- | --- |
 | `probe_success` | `1` when the configured endpoint returned HTTP 200; `0` otherwise. |
 | `probe_duration_seconds` | Time taken by each health request. |
+| `kube_deployment_status_replicas_available` / `kube_deployment_spec_replicas` | Available and desired replicas in the Kubernetes Deployment. |
+| `kube_pod_container_status_restarts_total` | Kubernetes-reported container restarts. |
 
-These are endpoint probes, not application request metrics. CPU, memory, container restarts, request rate, and error rate are not collected by this small stack yet. They require additional Kubernetes/container metric sources and backend instrumentation. Prometheus data is ephemeral in both local Compose and the initial Minikube Deployment; it is lost when those containers or pods are recreated.
+The last two metrics are Kubernetes-only; the Compose stack still has only endpoint probes. CPU and memory usage need a container/kubelet metric source, while request and error rates need application instrumentation. The dashboard does not pretend those metrics exist. Prometheus data is ephemeral in both local Compose and the initial Minikube Deployment; it is lost when those containers or pods are recreated.
 
 If targets stay down, check the Blackbox Exporter logs and confirm that `cloudbite-backend` and `cloudbite-frontend` Services are reachable from the monitoring network or namespace.

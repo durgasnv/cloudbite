@@ -145,14 +145,13 @@ or build directly against Minikube's container runtime. For the first implementa
 
 ### 5. Add monitoring
 
-The current monitoring stack uses Blackbox Exporter to probe `/health` and `/api/health`; it does not depend on a backend `/metrics` route. Start it using `monitoring/README.md`, then verify both `cloudbite_health` targets are `UP` in Prometheus and the **CloudBite Health** dashboard is populated.
+The monitoring stack uses Blackbox Exporter to probe `/health` and `/api/health`; it does not depend on a backend `/metrics` route. The Kubernetes variant also uses namespace-scoped kube-state-metrics for replica and restart metrics. Start it using `monitoring/README.md`, then verify the `cloudbite_health` and `kube_state_metrics` targets are `UP` in Prometheus and both dashboards are populated.
 
 For the next monitoring increment, coordinate backend request instrumentation and a Prometheus-format `/metrics` endpoint with Member 1. Add Kubernetes/container metric sources before creating panels for:
 
 * How many HTTP requests are received and how many fail?
 * What is request latency, if the application exposes it?
 * What CPU and memory are used by the application containers?
-* Have any containers restarted?
 
 Keep the Grafana dashboard JSON in `monitoring/grafana/` so another team member can reproduce it.
 

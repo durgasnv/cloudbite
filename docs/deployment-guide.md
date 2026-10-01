@@ -100,9 +100,9 @@ In another terminal, check `http://localhost:8080/health`, `http://localhost:808
 
 ## Monitoring verification
 
-After the application is Ready, follow [the monitoring guide](../monitoring/README.md) to create a local Grafana password and apply the monitoring Kustomization. Confirm that both `cloudbite_health` targets are `UP` in Prometheus and that the **CloudBite Health** dashboard shows two available endpoints.
+After the application is Ready, follow [the monitoring guide](../monitoring/README.md) to create a local Grafana password and apply the monitoring Kustomization. Confirm that both `cloudbite_health` targets and the `kube_state_metrics` target are `UP` in Prometheus. The **CloudBite Health** dashboard should show two available endpoints; **CloudBite Kubernetes** should show the desired and available replicas.
 
-This first dashboard shows endpoint availability and probe time. The backend still has no Prometheus-format `/metrics` endpoint, so request and resource metrics are not available yet.
+The health dashboard shows endpoint availability and probe time. The Kubernetes dashboard shows available/desired replicas and container restarts. The backend still has no Prometheus-format `/metrics` endpoint, so request and resource-usage metrics are not available yet.
 
 ## Clean up
 

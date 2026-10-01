@@ -7,6 +7,7 @@ resources:
   - kubernetes/blackbox-service.yaml
   - kubernetes/prometheus-deployment.yaml
   - kubernetes/prometheus-service.yaml
+  - kubernetes/kube-state-metrics.yaml
   - kubernetes/grafana-deployment.yaml
   - kubernetes/grafana-service.yaml
 
@@ -16,7 +17,7 @@ configMapGenerator:
       - blackbox.yml=prometheus/blackbox.yml
   - name: cloudbite-prometheus-config
     files:
-      - prometheus.yml=prometheus/prometheus.yml
+      - prometheus.yml=prometheus/prometheus.kubernetes.yml
   - name: cloudbite-grafana-datasource
     files:
       - prometheus.yml=grafana/provisioning/datasources/prometheus.yml
@@ -26,3 +27,4 @@ configMapGenerator:
   - name: cloudbite-grafana-dashboard
     files:
       - cloudbite-dashboard.json=grafana/cloudbite-dashboard.json
+      - cloudbite-kubernetes-dashboard.json=grafana/cloudbite-kubernetes-dashboard.json
