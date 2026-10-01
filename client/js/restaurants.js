@@ -1,29 +1,32 @@
 /**
  * CloudBite - Restaurants Listing & Filtering Logic (FR-01)
+ * Safe DOM rendering, comprehensive food + restaurant search, and accessible controls
  */
 
 let allRestaurants = [];
+let allMenuItems = [];
 let currentCuisineFilter = 'all';
 let currentSearchQuery = '';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const searchParam = urlParams.get('search');
-  if (searchParam) {
-    currentSearchQuery = searchParam;
-    const searchInput = document.getElementById('restaurantSearchInput');
-    if (searchInput) searchInput.value = searchParam;
-  }
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParam = urlParams.get('search');
+    if (searchParam) {
+      currentSearchQuery = searchParam.toLowerCase().trim();
+      const searchInput = document.getElementById('restaurantSearchInput');
+      if (searchInput) searchInput.value = searchParam;
+    }
 
-  initRestaurantsPage();
-});
+    initRestaurantsPage();
+  });
+}
 
 async function initRestaurantsPage() {
-  const container = document.getElementById('restaurantsGrid');
   const searchInput = document.getElementById('restaurantSearchInput');
   const chips = document.querySelectorAll('.chip');
 
-  // Setup search listener
+  // Search input handler
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
       currentSearchQuery = e.target.value.toLowerCase().trim();
@@ -31,17 +34,49 @@ async function initRestaurantsPage() {
     });
   }
 
-  // Setup cuisine chip filters
+  // Setup cuisine chip filters with keyboard accessibility
   chips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('active'));
+    chip.setAttribute('role', 'button');
+    chip.setAttribute('tabindex', '0');
+    chip.setAttribute('aria-pressed', chip.classList.contains('active') ? 'true' : 'false');
+
+    const handleChipSelection = () => {
+      chips.forEach(c => {
+        c.classList.remove('active');
+        c.setAttribute('aria-pressed', 'false');
+      });
       chip.classList.add('active');
+      chip.setAttribute('aria-pressed', 'true');
       currentCuisineFilter = chip.getAttribute('data-cuisine') || 'all';
       renderFilteredRestaurants();
+    };
+
+    chip.addEventListener('click', handleChipSelection);
+    chip.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleChipSelection();
+      }
     });
   });
 
-  // Fetch restaurants from REST API
+  // If a cuisine matches the initial search parameter, activate its chip
+  if (currentSearchQuery) {
+    chips.forEach(chip => {
+      const chipCuisine = (chip.getAttribute('data-cuisine') || '').toLowerCase();
+      if (chipCuisine && chipCuisine !== 'all' && (chipCuisine === currentSearchQuery || currentSearchQuery.includes(chipCuisine))) {
+        chips.forEach(c => {
+          c.classList.remove('active');
+          c.setAttribute('aria-pressed', 'false');
+        });
+        chip.classList.add('active');
+        chip.setAttribute('aria-pressed', 'true');
+        currentCuisineFilter = chip.getAttribute('data-cuisine');
+      }
+    });
+  }
+
+  // Fetch restaurants & menu items from REST API
   await fetchRestaurants();
 }
 
@@ -49,40 +84,119 @@ async function fetchRestaurants() {
   const container = document.getElementById('restaurantsGrid');
   if (!container) return;
 
-  container.innerHTML = `
-    <div class="loader-container" style="grid-column: 1 / -1;">
-      <div class="spinner"></div>
-      <p>Loading tasty restaurants...</p>
-    </div>
-  `;
+  container.innerHTML = '';
+  const loaderWrapper = document.createElement('div');
+  loaderWrapper.className = 'loader-container';
+  loaderWrapper.style.gridColumn = '1 / -1';
+
+  const spinner = document.createElement('div');
+  spinner.className = 'spinner';
+  const loaderText = document.createElement('p');
+  loaderText.textContent = 'Loading tasty restaurants & menu dishes...';
+
+  loaderWrapper.appendChild(spinner);
+  loaderWrapper.appendChild(loaderText);
+  container.appendChild(loaderWrapper);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/restaurants`);
-    
-    if (!response.ok) {
-      throw new Error(`Server returned status ${response.status}`);
+    const [restaurantsRes, menuRes] = await Promise.all([
+      fetch(`${API_BASE_URL}/restaurants`),
+      fetch(`${API_BASE_URL}/menu`).catch(() => null)
+    ]);
+
+    if (!restaurantsRes.ok) {
+      throw new Error(`Server returned status ${restaurantsRes.status}`);
     }
 
-    const result = await response.json();
-
-    if (result.success && Array.isArray(result.data)) {
-      allRestaurants = result.data;
-      renderFilteredRestaurants();
+    const resJson = await restaurantsRes.json();
+    if (resJson.success && Array.isArray(resJson.data)) {
+      allRestaurants = resJson.data;
     } else {
-      throw new Error(result.message || 'Failed to parse restaurants data.');
+      throw new Error(resJson.message || 'Failed to parse restaurants data.');
     }
+
+    if (menuRes && menuRes.ok) {
+      try {
+        const menuJson = await menuRes.json();
+        if (menuJson.success && Array.isArray(menuJson.data)) {
+          allMenuItems = menuJson.data;
+        }
+      } catch (e) {
+        console.warn('Could not parse menu data for food search:', e);
+      }
+    }
+
+    renderFilteredRestaurants();
   } catch (error) {
     console.error('Error fetching restaurants:', error);
-    container.innerHTML = `
-      <div class="empty-state" style="grid-column: 1 / -1;">
-        <div class="empty-state-icon">⚠️</div>
-        <h3 class="empty-state-title">Unable to load restaurants</h3>
-        <p class="empty-state-text">Make sure the CloudBite backend server is running on port 5000.</p>
-        <button class="btn btn-primary" onclick="fetchRestaurants()">Try Again</button>
-      </div>
-    `;
+    renderErrorState(container, 'Unable to load restaurants at this time. Please check your network connection and try again.');
     showToast('Failed to connect to backend API', 'error');
   }
+}
+
+function renderErrorState(container, message) {
+  container.innerHTML = '';
+  const emptyState = document.createElement('div');
+  emptyState.className = 'empty-state';
+  emptyState.style.gridColumn = '1 / -1';
+
+  const icon = document.createElement('div');
+  icon.className = 'empty-state-icon';
+  icon.textContent = '⚠️';
+
+  const title = document.createElement('h3');
+  title.className = 'empty-state-title';
+  title.textContent = 'Unable to load restaurants';
+
+  const desc = document.createElement('p');
+  desc.className = 'empty-state-text';
+  desc.textContent = message;
+
+  const retryBtn = document.createElement('button');
+  retryBtn.className = 'btn btn-primary';
+  retryBtn.textContent = 'Try Again';
+  retryBtn.addEventListener('click', () => fetchRestaurants());
+
+  emptyState.appendChild(icon);
+  emptyState.appendChild(title);
+  emptyState.appendChild(desc);
+  emptyState.appendChild(retryBtn);
+  container.appendChild(emptyState);
+}
+
+function filterRestaurants(restaurants, menuItems, searchQuery, cuisineFilter) {
+  const query = (searchQuery || '').toLowerCase().trim();
+  const cuisine = (cuisineFilter || 'all').toLowerCase().trim();
+
+  return restaurants.filter(restaurant => {
+    // 1. Matches restaurant name, cuisine, location
+    const nameMatch = (restaurant.name || '').toLowerCase().includes(query);
+    const cuisineMatch = (restaurant.cuisine || '').toLowerCase().includes(query);
+    const locationMatch = (restaurant.location || '').toLowerCase().includes(query);
+
+    // 2. Matches food/dish items offered by this restaurant (fulfills homepage food search promise)
+    const matchingDishes = (menuItems || []).filter(item =>
+      item.restaurantId === restaurant.id &&
+      ((item.name || '').toLowerCase().includes(query) ||
+       (item.description || '').toLowerCase().includes(query) ||
+       (item.category || '').toLowerCase().includes(query))
+    );
+
+    const matchesSearch = !query || nameMatch || cuisineMatch || locationMatch || matchingDishes.length > 0;
+
+    const matchesCuisine =
+      cuisine === 'all' ||
+      (restaurant.cuisine || '').toLowerCase().includes(cuisine);
+
+    // Attach matched dishes temporarily for badge display
+    if (matchingDishes.length > 0 && query && !nameMatch && !cuisineMatch) {
+      restaurant._matchingDishes = matchingDishes;
+    } else {
+      delete restaurant._matchingDishes;
+    }
+
+    return matchesSearch && matchesCuisine;
+  });
 }
 
 function renderFilteredRestaurants() {
@@ -90,61 +204,138 @@ function renderFilteredRestaurants() {
   const countLabel = document.getElementById('restaurantCountLabel');
   if (!container) return;
 
-  const filtered = allRestaurants.filter(restaurant => {
-    const matchesSearch = 
-      restaurant.name.toLowerCase().includes(currentSearchQuery) ||
-      restaurant.cuisine.toLowerCase().includes(currentSearchQuery) ||
-      restaurant.location.toLowerCase().includes(currentSearchQuery);
-
-    const matchesCuisine = 
-      currentCuisineFilter === 'all' || 
-      restaurant.cuisine.toLowerCase().includes(currentCuisineFilter.toLowerCase());
-
-    return matchesSearch && matchesCuisine;
-  });
+  const filtered = filterRestaurants(allRestaurants, allMenuItems, currentSearchQuery, currentCuisineFilter);
 
   if (countLabel) {
     countLabel.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? 'restaurant' : 'restaurants'}`;
   }
 
+  container.innerHTML = '';
+
   if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state" style="grid-column: 1 / -1;">
-        <div class="empty-state-icon">🔍</div>
-        <h3 class="empty-state-title">No restaurants found</h3>
-        <p class="empty-state-text">No restaurants match your search criteria. Try a different search term or filter.</p>
-      </div>
-    `;
+    const emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    emptyState.style.gridColumn = '1 / -1';
+
+    const icon = document.createElement('div');
+    icon.className = 'empty-state-icon';
+    icon.textContent = '🔍';
+
+    const title = document.createElement('h3');
+    title.className = 'empty-state-title';
+    title.textContent = 'No restaurants or dishes found';
+
+    const text = document.createElement('p');
+    text.className = 'empty-state-text';
+    text.textContent = currentSearchQuery
+      ? `No results matched "${currentSearchQuery}". Try searching for popular dishes like biryani, pizza, burger, or check other cuisines.`
+      : 'No restaurants match your filter criteria.';
+
+    emptyState.appendChild(icon);
+    emptyState.appendChild(title);
+    emptyState.appendChild(text);
+    container.appendChild(emptyState);
     return;
   }
 
-  container.innerHTML = filtered.map(restaurant => `
-    <article class="restaurant-card">
-      <div class="restaurant-image-wrapper">
-        <img 
-          src="${restaurant.image}" 
-          alt="${restaurant.name}" 
-          loading="lazy" 
-          onerror="this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80'"
-        />
-        <span class="restaurant-time-badge">⏱️ ${restaurant.deliveryTime || '30 mins'}</span>
-      </div>
-      <div class="restaurant-body">
-        <div class="restaurant-header">
-          <h3 class="restaurant-name">${restaurant.name}</h3>
-          <span class="rating-badge">★ ${restaurant.rating}</span>
-        </div>
-        <div class="restaurant-cuisine">${restaurant.cuisine}</div>
-        <p class="restaurant-desc">${restaurant.description}</p>
-        <div class="restaurant-footer">
-          <div class="restaurant-location">
-            📍 <span>${restaurant.location}</span>
-          </div>
-          <a href="menu.html?restaurantId=${restaurant.id}" class="btn btn-primary btn-sm">
-            View Menu →
-          </a>
-        </div>
-      </div>
-    </article>
-  `).join('');
+  // Safe DOM construction for restaurant cards
+  const fragment = document.createDocumentFragment();
+  const fallbackImg = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80';
+
+  filtered.forEach(restaurant => {
+    const card = document.createElement('article');
+    card.className = 'restaurant-card';
+
+    // Image section
+    const imgWrapper = document.createElement('div');
+    imgWrapper.className = 'restaurant-image-wrapper';
+
+    const img = document.createElement('img');
+    img.src = sanitizeImageUrl(restaurant.image, fallbackImg);
+    img.alt = String(restaurant.name || 'Restaurant');
+    img.loading = 'lazy';
+    img.addEventListener('error', () => {
+      img.src = fallbackImg;
+    });
+
+    const timeBadge = document.createElement('span');
+    timeBadge.className = 'restaurant-time-badge';
+    timeBadge.textContent = `⏱️ ${restaurant.deliveryTime || '30 mins'}`;
+
+    imgWrapper.appendChild(img);
+    imgWrapper.appendChild(timeBadge);
+
+    // Body section
+    const body = document.createElement('div');
+    body.className = 'restaurant-body';
+
+    const header = document.createElement('div');
+    header.className = 'restaurant-header';
+
+    const name = document.createElement('h3');
+    name.className = 'restaurant-name';
+    name.textContent = String(restaurant.name || 'Unnamed Restaurant');
+
+    const rating = document.createElement('span');
+    rating.className = 'rating-badge';
+    rating.textContent = `★ ${restaurant.rating || '4.0'}`;
+
+    header.appendChild(name);
+    header.appendChild(rating);
+
+    const cuisine = document.createElement('div');
+    cuisine.className = 'restaurant-cuisine';
+    cuisine.textContent = String(restaurant.cuisine || '');
+
+    const desc = document.createElement('p');
+    desc.className = 'restaurant-desc';
+    desc.textContent = String(restaurant.description || '');
+
+    body.appendChild(header);
+    body.appendChild(cuisine);
+    body.appendChild(desc);
+
+    // Food match indicator if matched by dish
+    if (restaurant._matchingDishes && restaurant._matchingDishes.length > 0) {
+      const matchTag = document.createElement('div');
+      matchTag.style.cssText = 'margin-top: 0.4rem; font-size: 0.8rem; color: var(--primary); font-weight: 600;';
+      const sampleDish = restaurant._matchingDishes[0].name;
+      matchTag.textContent = `🍲 Matches dish: "${sampleDish}"`;
+      body.appendChild(matchTag);
+    }
+
+    // Footer section
+    const footer = document.createElement('div');
+    footer.className = 'restaurant-footer';
+
+    const locWrapper = document.createElement('div');
+    locWrapper.className = 'restaurant-location';
+    locWrapper.textContent = '📍 ';
+    const locSpan = document.createElement('span');
+    locSpan.textContent = String(restaurant.location || '');
+    locWrapper.appendChild(locSpan);
+
+    const viewMenuBtn = document.createElement('a');
+    viewMenuBtn.href = `menu.html?restaurantId=${encodeURIComponent(restaurant.id)}`;
+    viewMenuBtn.className = 'btn btn-primary btn-sm';
+    viewMenuBtn.textContent = 'View Menu →';
+    viewMenuBtn.setAttribute('aria-label', `View menu for ${restaurant.name}`);
+
+    footer.appendChild(locWrapper);
+    footer.appendChild(viewMenuBtn);
+    body.appendChild(footer);
+
+    card.appendChild(imgWrapper);
+    card.appendChild(body);
+    fragment.appendChild(card);
+  });
+
+  container.appendChild(fragment);
+}
+
+// Export for Node unit testing
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    filterRestaurants
+  };
 }

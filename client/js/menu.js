@@ -1,17 +1,19 @@
 /**
  * CloudBite - Restaurant Menu Page Logic (FR-02, FR-03)
+ * Safe DOM rendering, accessible controls, and resilient error states
  */
 
 let currentRestaurant = null;
 let currentMenu = [];
 let selectedCategory = 'all';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const restaurantId = urlParams.get('restaurantId') || '1';
-
-  initMenuPage(restaurantId);
-});
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const restaurantId = urlParams.get('restaurantId') || '1';
+    initMenuPage(restaurantId);
+  });
+}
 
 async function initMenuPage(restaurantId) {
   const bannerContainer = document.getElementById('restaurantBanner');
@@ -19,7 +21,7 @@ async function initMenuPage(restaurantId) {
 
   try {
     // 1. Fetch Restaurant details (FR-02)
-    const resResponse = await fetch(`${API_BASE_URL}/restaurants/${restaurantId}`);
+    const resResponse = await fetch(`${API_BASE_URL}/restaurants/${encodeURIComponent(restaurantId)}`);
     if (!resResponse.ok) {
       throw new Error(`Restaurant not found (Status ${resResponse.status})`);
     }
@@ -27,12 +29,12 @@ async function initMenuPage(restaurantId) {
     currentRestaurant = resData.data;
 
     // 2. Fetch Restaurant Menu (FR-03)
-    const menuResponse = await fetch(`${API_BASE_URL}/restaurants/${restaurantId}/menu`);
+    const menuResponse = await fetch(`${API_BASE_URL}/restaurants/${encodeURIComponent(restaurantId)}/menu`);
     if (!menuResponse.ok) {
       throw new Error(`Failed to fetch menu (Status ${menuResponse.status})`);
     }
     const menuData = await menuResponse.json();
-    currentMenu = menuData.data;
+    currentMenu = Array.isArray(menuData.data) ? menuData.data : [];
 
     renderRestaurantBanner(currentRestaurant);
     renderCategoryTabs(currentMenu);
@@ -41,14 +43,33 @@ async function initMenuPage(restaurantId) {
   } catch (error) {
     console.error('Error loading menu:', error);
     if (bannerContainer) {
-      bannerContainer.innerHTML = `
-        <div class="empty-state" style="width: 100%;">
-          <div class="empty-state-icon">⚠️</div>
-          <h3 class="empty-state-title">Restaurant or Menu Not Found</h3>
-          <p class="empty-state-text">${error.message}</p>
-          <a href="restaurants.html" class="btn btn-primary">Browse All Restaurants</a>
-        </div>
-      `;
+      bannerContainer.innerHTML = '';
+      const emptyState = document.createElement('div');
+      emptyState.className = 'empty-state';
+      emptyState.style.width = '100%';
+
+      const icon = document.createElement('div');
+      icon.className = 'empty-state-icon';
+      icon.textContent = '⚠️';
+
+      const title = document.createElement('h3');
+      title.className = 'empty-state-title';
+      title.textContent = 'Restaurant or Menu Not Found';
+
+      const desc = document.createElement('p');
+      desc.className = 'empty-state-text';
+      desc.textContent = error.message || 'Unable to retrieve menu details.';
+
+      const browseLink = document.createElement('a');
+      browseLink.href = 'restaurants.html';
+      browseLink.className = 'btn btn-primary';
+      browseLink.textContent = 'Browse All Restaurants';
+
+      emptyState.appendChild(icon);
+      emptyState.appendChild(title);
+      emptyState.appendChild(desc);
+      emptyState.appendChild(browseLink);
+      bannerContainer.appendChild(emptyState);
     }
     if (menuContainer) menuContainer.innerHTML = '';
   }
@@ -56,49 +77,100 @@ async function initMenuPage(restaurantId) {
 
 function renderRestaurantBanner(restaurant) {
   const banner = document.getElementById('restaurantBanner');
-  if (!banner) return;
+  if (!banner || !restaurant) return;
 
-  banner.innerHTML = `
-    <img 
-      src="${restaurant.image}" 
-      alt="${restaurant.name}" 
-      class="restaurant-hero-img"
-      onerror="this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80'"
-    />
-    <div class="restaurant-hero-info">
-      <h1 class="restaurant-hero-title">${restaurant.name}</h1>
-      <p style="color: var(--primary); font-weight: 600; font-size: 1rem;">${restaurant.cuisine}</p>
-      <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.35rem;">${restaurant.description}</p>
-      <div class="restaurant-meta-row">
-        <span class="rating-badge">★ ${restaurant.rating}</span>
-        <span>⏱️ ${restaurant.deliveryTime || '30 mins'}</span>
-        <span>📍 ${restaurant.location}</span>
-        <span>💰 ₹${restaurant.priceForTwo || 400} for two</span>
-      </div>
-    </div>
-  `;
+  banner.innerHTML = '';
+  const fallbackHero = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80';
+
+  const heroImg = document.createElement('img');
+  heroImg.src = sanitizeImageUrl(restaurant.image, fallbackHero);
+  heroImg.alt = String(restaurant.name || 'Restaurant');
+  heroImg.className = 'restaurant-hero-img';
+  heroImg.addEventListener('error', () => {
+    heroImg.src = fallbackHero;
+  });
+
+  const heroInfo = document.createElement('div');
+  heroInfo.className = 'restaurant-hero-info';
+
+  const title = document.createElement('h1');
+  title.className = 'restaurant-hero-title';
+  title.textContent = String(restaurant.name || '');
+
+  const cuisineP = document.createElement('p');
+  cuisineP.style.cssText = 'color: var(--primary); font-weight: 600; font-size: 1rem;';
+  cuisineP.textContent = String(restaurant.cuisine || '');
+
+  const descP = document.createElement('p');
+  descP.style.cssText = 'color: var(--text-muted); font-size: 0.95rem; margin-top: 0.35rem;';
+  descP.textContent = String(restaurant.description || '');
+
+  const metaRow = document.createElement('div');
+  metaRow.className = 'restaurant-meta-row';
+
+  const ratingSpan = document.createElement('span');
+  ratingSpan.className = 'rating-badge';
+  ratingSpan.textContent = `★ ${restaurant.rating || '4.0'}`;
+
+  const timeSpan = document.createElement('span');
+  timeSpan.textContent = `⏱️ ${restaurant.deliveryTime || '30 mins'}`;
+
+  const locSpan = document.createElement('span');
+  locSpan.textContent = `📍 ${restaurant.location || ''}`;
+
+  const priceSpan = document.createElement('span');
+  priceSpan.textContent = `💰 ₹${restaurant.priceForTwo || 400} for two`;
+
+  metaRow.appendChild(ratingSpan);
+  metaRow.appendChild(timeSpan);
+  metaRow.appendChild(locSpan);
+  metaRow.appendChild(priceSpan);
+
+  heroInfo.appendChild(title);
+  heroInfo.appendChild(cuisineP);
+  heroInfo.appendChild(descP);
+  heroInfo.appendChild(metaRow);
+
+  banner.appendChild(heroImg);
+  banner.appendChild(heroInfo);
 }
 
 function renderCategoryTabs(menuItems) {
   const tabContainer = document.getElementById('categoryTabs');
   if (!tabContainer) return;
 
-  // Extract unique categories
-  const categories = ['all', ...new Set(menuItems.map(item => item.category))];
+  const categories = ['all', ...new Set(menuItems.map(item => item.category).filter(Boolean))];
+  tabContainer.innerHTML = '';
 
-  tabContainer.innerHTML = categories.map(cat => {
-    const label = cat === 'all' ? 'All Dishes' : cat;
-    const activeClass = cat === selectedCategory ? 'active' : '';
-    return `<button class="chip ${activeClass}" data-cat="${cat}">${label}</button>`;
-  }).join('');
+  categories.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = `chip ${cat === selectedCategory ? 'active' : ''}`;
+    btn.setAttribute('data-cat', cat);
+    btn.setAttribute('role', 'button');
+    btn.setAttribute('tabindex', '0');
+    btn.setAttribute('aria-pressed', cat === selectedCategory ? 'true' : 'false');
+    btn.textContent = cat === 'all' ? 'All Dishes' : cat;
 
-  tabContainer.querySelectorAll('.chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      tabContainer.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+    const selectCategory = () => {
+      tabContainer.querySelectorAll('.chip').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
       btn.classList.add('active');
-      selectedCategory = btn.getAttribute('data-cat');
+      btn.setAttribute('aria-pressed', 'true');
+      selectedCategory = cat;
       renderMenuItems();
+    };
+
+    btn.addEventListener('click', selectCategory);
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectCategory();
+      }
     });
+
+    tabContainer.appendChild(btn);
   });
 }
 
@@ -106,49 +178,97 @@ function renderMenuItems() {
   const container = document.getElementById('menuGrid');
   if (!container) return;
 
-  const filteredItems = selectedCategory === 'all' 
-    ? currentMenu 
+  const filteredItems = selectedCategory === 'all'
+    ? currentMenu
     : currentMenu.filter(item => item.category === selectedCategory);
 
+  container.innerHTML = '';
+
   if (filteredItems.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state" style="grid-column: 1 / -1;">
-        <div class="empty-state-icon">🍽️</div>
-        <h3 class="empty-state-title">No items in this category</h3>
-        <p class="empty-state-text">Check out other categories in the menu above!</p>
-      </div>
-    `;
+    const emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    emptyState.style.gridColumn = '1 / -1';
+
+    const icon = document.createElement('div');
+    icon.className = 'empty-state-icon';
+    icon.textContent = '🍽️';
+
+    const title = document.createElement('h3');
+    title.className = 'empty-state-title';
+    title.textContent = 'No items in this category';
+
+    const desc = document.createElement('p');
+    desc.className = 'empty-state-text';
+    desc.textContent = 'Check out other categories in the menu above!';
+
+    emptyState.appendChild(icon);
+    emptyState.appendChild(title);
+    emptyState.appendChild(desc);
+    container.appendChild(emptyState);
     return;
   }
 
-  container.innerHTML = filteredItems.map(item => `
-    <div class="food-card">
-      <div class="food-details">
-        <span class="veg-indicator ${item.isVeg ? 'veg' : 'non-veg'}" title="${item.isVeg ? 'Vegetarian' : 'Non-Vegetarian'}"></span>
-        <h3 class="food-name">${item.name}</h3>
-        <div class="food-price">${formatPrice(item.price)}</div>
-        <p class="food-desc">${item.description}</p>
-      </div>
-      <div class="food-image-section">
-        <img 
-          src="${item.image}" 
-          alt="${item.name}" 
-          class="food-thumb"
-          loading="lazy"
-          onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80'"
-        />
-        <button class="food-add-btn" onclick="handleAddToCart(${item.id})">
-          + ADD
-        </button>
-      </div>
-    </div>
-  `).join('');
-}
+  const fragment = document.createDocumentFragment();
+  const fallbackFood = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80';
 
-// Global handler attached to window for Add To Cart buttons
-window.handleAddToCart = function(itemId) {
-  const item = currentMenu.find(i => i.id === itemId);
-  if (item) {
-    addToCart(item);
-  }
-};
+  filteredItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'food-card';
+
+    // Food details
+    const details = document.createElement('div');
+    details.className = 'food-details';
+
+    const vegInd = document.createElement('span');
+    vegInd.className = `veg-indicator ${item.isVeg ? 'veg' : 'non-veg'}`;
+    vegInd.title = item.isVeg ? 'Vegetarian' : 'Non-Vegetarian';
+    vegInd.setAttribute('aria-label', item.isVeg ? 'Vegetarian' : 'Non-Vegetarian');
+
+    const foodName = document.createElement('h3');
+    foodName.className = 'food-name';
+    foodName.textContent = String(item.name || 'Food Item');
+
+    const priceDiv = document.createElement('div');
+    priceDiv.className = 'food-price';
+    priceDiv.textContent = formatPrice(item.price);
+
+    const descP = document.createElement('p');
+    descP.className = 'food-desc';
+    descP.textContent = String(item.description || '');
+
+    details.appendChild(vegInd);
+    details.appendChild(foodName);
+    details.appendChild(priceDiv);
+    details.appendChild(descP);
+
+    // Image section
+    const imgSection = document.createElement('div');
+    imgSection.className = 'food-image-section';
+
+    const img = document.createElement('img');
+    img.src = sanitizeImageUrl(item.image, fallbackFood);
+    img.alt = String(item.name || 'Food Item');
+    img.className = 'food-thumb';
+    img.loading = 'lazy';
+    img.addEventListener('error', () => {
+      img.src = fallbackFood;
+    });
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'food-add-btn';
+    addBtn.textContent = '+ ADD';
+    addBtn.setAttribute('aria-label', `Add ${item.name} to cart`);
+    addBtn.addEventListener('click', () => {
+      addToCart(item);
+    });
+
+    imgSection.appendChild(img);
+    imgSection.appendChild(addBtn);
+
+    card.appendChild(details);
+    card.appendChild(imgSection);
+    fragment.appendChild(card);
+  });
+
+  container.appendChild(fragment);
+}
