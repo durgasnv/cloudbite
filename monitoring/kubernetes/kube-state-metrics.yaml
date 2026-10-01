@@ -65,11 +65,18 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+            - name: telemetry
+              containerPort: 8081
           readinessProbe:
             httpGet:
-              path: /metrics
-              port: http
+              path: /readyz
+              port: telemetry
             periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            periodSeconds: 20
           resources:
             requests:
               cpu: 30m
@@ -79,6 +86,7 @@ spec:
               memory: 256Mi
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop: [ALL]
 ---
