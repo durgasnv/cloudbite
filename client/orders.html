@@ -19,9 +19,9 @@
         <div>Cloud<span class="highlight">Bite</span></div>
       </a>
 
-      <button class="mobile-toggle" aria-label="Toggle navigation">☰</button>
+      <button class="mobile-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navbarLinks">☰</button>
 
-      <ul class="nav-links">
+      <ul class="nav-links" id="navbarLinks">
         <li><a href="index.html" class="nav-link">Home</a></li>
         <li><a href="restaurants.html" class="nav-link">Restaurants</a></li>
         <li><a href="orders.html" class="nav-link active">Order History</a></li>
@@ -39,14 +39,48 @@
     <div class="container" style="max-width: 850px;">
 
       <!-- Header -->
-      <div class="section-header">
+      <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
         <div>
           <h1 class="section-title">Your Order History</h1>
-          <p class="section-subtitle">Track and review all previous food orders in real time (FR-08)</p>
+          <p class="section-subtitle">Track and review your personal food orders in real time (FR-08)</p>
         </div>
-        <button class="btn btn-outline btn-sm" onclick="fetchOrders()">
-          🔄 Refresh Orders
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button id="refreshOrdersBtn" class="btn btn-outline btn-sm" type="button">
+            🔄 Refresh
+          </button>
+          <button id="adminModeToggleBtn" class="btn btn-outline btn-sm" type="button" style="border-color: #6366f1; color: #4f46e5;">
+            ⚙️ Staff / Demo Mode
+          </button>
+        </div>
+      </div>
+
+      <!-- Staff / Demo Admin Active Banner -->
+      <div id="adminModeBanner" style="display: none; background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 0.75rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;" role="region" aria-label="Staff Mode Status">
+        <div>
+          <strong style="font-size: 0.95rem;">⚙️ Staff / Demo Mode Active</strong>
+          <div style="font-size: 0.8rem; color: #4338ca; margin-top: 0.15rem;">
+            Viewing all orders with permission to simulate order status transitions.
+          </div>
+        </div>
+        <button id="exitAdminModeBtn" class="btn btn-outline btn-sm" type="button" style="background: white; padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+          Exit Staff Mode
         </button>
+      </div>
+
+      <!-- Customer Order Lookup Form -->
+      <div id="customerLookupBar" class="order-lookup-bar" style="margin-bottom: 1.5rem; background: var(--surface); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <label for="orderLookupInput" style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">🔍 Track Order by ID:</label>
+        <div style="display: flex; gap: 0.5rem; flex: 1; min-width: 250px;">
+          <input 
+            type="text" 
+            id="orderLookupInput" 
+            placeholder="e.g. ORD1025" 
+            aria-label="Enter Order ID to track"
+            style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;" 
+          />
+          <button id="orderLookupBtn" class="btn btn-primary btn-sm" type="button">Track</button>
+          <button id="clearLookupBtn" class="btn btn-outline btn-sm" type="button" style="display: none;">Show My Orders</button>
+        </div>
       </div>
 
       <!-- Loading State -->
@@ -58,8 +92,8 @@
       <!-- Empty State -->
       <div id="emptyOrdersState" class="empty-state" style="display: none;">
         <div class="empty-state-icon">📦</div>
-        <h2 class="empty-state-title">No orders placed yet</h2>
-        <p class="empty-state-text">You haven't placed any food orders on CloudBite yet. Start exploring our delicious menus!</p>
+        <h2 class="empty-state-title" id="emptyTitle">No orders placed yet</h2>
+        <p class="empty-state-text" id="emptyDesc">You haven't placed any food orders on CloudBite yet. Start exploring our delicious menus!</p>
         <a href="restaurants.html" class="btn btn-primary">Find Food Now →</a>
       </div>
 

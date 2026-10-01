@@ -19,9 +19,9 @@
         <div>Cloud<span class="highlight">Bite</span></div>
       </a>
 
-      <button class="mobile-toggle" aria-label="Toggle navigation">☰</button>
+      <button class="mobile-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navbarLinks">☰</button>
 
-      <ul class="nav-links">
+      <ul class="nav-links" id="navbarLinks">
         <li><a href="index.html" class="nav-link">Home</a></li>
         <li><a href="restaurants.html" class="nav-link">Restaurants</a></li>
         <li><a href="orders.html" class="nav-link">Order History</a></li>
@@ -95,6 +95,10 @@
           <form id="checkoutForm" class="checkout-form">
             <h4 style="font-size: 1rem; font-weight: 700; border-top: 1px solid var(--border); padding-top: 1rem;">Customer Details</h4>
 
+            <div id="checkoutErrorContainer" style="display: none; margin: 0.75rem 0; padding: 0.75rem 1rem; border-radius: var(--radius-sm); background: #fee2e2; border: 1px solid #f87171; color: #991b1b; font-size: 0.875rem;" role="alert" aria-live="assertive">
+              <!-- Dynamically populated on order rejection or price change -->
+            </div>
+
             <div class="form-group">
               <label for="customerName">Full Name *</label>
               <input type="text" id="customerName" placeholder="e.g. Rahul Sharma" required />
@@ -123,10 +127,10 @@
   </main>
 
   <!-- Order Success Modal (FR-07) -->
-  <div id="orderSuccessModal" class="modal-overlay">
+  <div id="orderSuccessModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
     <div class="modal-content">
       <div class="modal-icon">🎉</div>
-      <h2 class="modal-title">Order Placed Successfully!</h2>
+      <h2 class="modal-title" id="modalTitle">Order Placed Successfully!</h2>
       <p class="modal-text">
         Thank you for your order! Your delicious meal is being prepared with top-notch care.
       </p>
