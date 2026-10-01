@@ -35,7 +35,7 @@ kubectl apply -f kubernetes/backend-deployment.yaml
 kubectl apply -f kubernetes/frontend-deployment.yaml
 ```
 
-For repeat deployments, apply the modified files or rerun this sequence. Rebuild and reload local images after source changes, then restart the affected Deployment.
+For repeat manual deployments, apply the modified files or rerun this sequence. Rebuild and reload local images after source changes, then restart the affected Deployment. Jenkins instead runs `scripts/deploy-minikube.sh`, which loads and applies its exact scanned build tags to avoid deploying the `:local` placeholders.
 
 ## Verification
 
