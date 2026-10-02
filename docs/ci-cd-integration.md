@@ -18,6 +18,8 @@ All required tools are invoked directly. A missing scanner or unavailable servic
 
 Use a Linux agent labelled `cloudbite-release` with Node.js 20+, npm, Docker daemon access, Gitleaks, Trivy, Minikube, kubectl, and Bash. Docker and Minikube must address the same local image store/cluster; a remote Docker daemon or separate Minikube host needs a registry-based design instead. Give the agent only the cluster access required for the `cloudbite` namespace and image loading. Do not store tokens, kubeconfig, or passwords in Git.
 
+The deployment script uses `minikube` from `PATH` by default. For a non-system installation, set `MINIKUBE_BIN` to an executable path available to the Jenkins agent. The local cluster's kubeconfig must refer to that same Minikube profile.
+
 Install the SonarQube Scanner for Jenkins plugin and configure:
 
 1. A SonarQube server installation named `SonarQube`, with its token in Jenkins credentials.
@@ -48,7 +50,9 @@ SonarQube and deployment need configured services. For a safe failure demonstrat
 
 ## Current limits
 
-The pipeline is defined in source but cannot be called operational until a configured Jenkins server, SonarQube, scanners, Docker daemon, and Minikube cluster run it successfully. The backend still stores orders in a pod-local JSON file; rollout replacement can lose orders. Database-backed persistence and native request metrics require application work outside the current infrastructure-only scope. Monitoring deployment remains a separate operator step because it needs a Grafana admin credential; its Kubernetes setup includes replica and restart metrics. See [monitoring setup](../monitoring/README.md).
+The pipeline is defined in source but cannot be called operational until a configured Jenkins release agent, SonarQube, scanners, and the Minikube cluster run it successfully. The backend still stores orders in a pod-local JSON file; rollout replacement can lose orders. Database-backed persistence and native request metrics require application work outside the current infrastructure-only scope. Monitoring deployment remains a separate operator step because it needs a Grafana admin credential; its Kubernetes setup includes replica and restart metrics. See [monitoring setup](../monitoring/README.md).
+
+On 2026-10-02, both Docker images built locally, the backend image contained no local orders, the application Deployments reached 1/1 backend and 2/2 frontend Ready in Minikube, all four Prometheus targets were `UP`, and Grafana's health endpoint responded. This verifies the Member 3 local path, **not** a Jenkins run. The current Jenkins service account is not in the Docker socket's group, has no installed `minikube` command, and cannot read the local user's kubeconfig. Configure a dedicated `cloudbite-release` agent with the required tools and tightly scoped access; do not treat the Jenkins controller's Docker socket access as a routine fix.
 
 The newly integrated frontend/API branch accepts a hard-coded demo admin key and allows order lookup by sequential ID. Secret scanners do not establish that this access model is secure. Treat a live deployment as blocked until the application owner replaces the demo access path and limits customer data exposure. `.dockerignore` now keeps local order records out of the backend image, but it does not make pod-local order storage durable.
 

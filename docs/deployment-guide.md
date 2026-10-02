@@ -1,6 +1,6 @@
 # Local Deployment Guide
 
-This guide describes the current local container and Minikube setup. Docker and Kubernetes commands still need to be executed on a machine with Docker Desktop integration, Minikube, and kubectl available.
+This guide describes the local container and Minikube setup. On 2026-10-02, the application and monitoring Deployments were verified Ready in a local Minikube Docker-driver cluster, both health probes were `UP`, and Grafana responded to its health check. This does not verify the Jenkins release stage or make the demo-key authorization safe for public use.
 
 ## Prerequisites
 
@@ -45,7 +45,7 @@ See [the container guide](../docker/README.md) for logs and the current storage 
 ## Start the local cluster
 
 ```bash
-minikube start
+minikube start --driver=docker
 kubectl cluster-info
 ```
 
@@ -61,6 +61,8 @@ minikube image load cloudbite-frontend:local
 ```
 
 The image names and tags above match the Kubernetes Deployments. Rebuild and reload both images after source changes.
+
+For a build-specific tag, set `BACKEND_IMAGE`, `FRONTEND_IMAGE`, and `KUBECONFIG`, then run `bash scripts/deploy-minikube.sh`. This renders the scanned tags into the manifests without briefly applying the `:local` placeholders. Set `MINIKUBE_BIN` if the executable is not on `PATH`.
 
 ## Configure application values
 
@@ -93,10 +95,10 @@ kubectl logs deployment/cloudbite-frontend -n cloudbite
 The frontend Service is internal to the cluster. Use port forwarding to access it locally:
 
 ```bash
-kubectl port-forward -n cloudbite service/cloudbite-frontend 8080:8080
+kubectl port-forward -n cloudbite service/cloudbite-frontend 18080:8080
 ```
 
-In another terminal, check `http://localhost:8080/health`, `http://localhost:8080/api/health`, and `http://localhost:8080/api/restaurants`.
+In another terminal, check `http://localhost:18080/health`, `http://localhost:18080/api/health`, and `http://localhost:18080/api/restaurants`. The local port is `18080` to avoid the existing Jenkins/Compose use of `8080`.
 
 ## Monitoring verification
 

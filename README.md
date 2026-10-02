@@ -4,6 +4,6 @@ CloudBite is a simplified cloud-native food delivery application that demonstrat
 
 The project addresses a common software-delivery problem: security checks are often performed only near the end of development, when vulnerabilities are more expensive to fix. The Jenkins pipeline now defines automated tests, syntax and SonarQube analysis, secret detection, dependency auditing, and container-image scanning. A failed gate stops deployment.
 
-Successful `main` builds are configured to deploy the two scanned images to Minikube. Prometheus and Grafana provide endpoint-health monitoring. These services still require a configured Jenkins/Minikube environment; live deployment has not been verified here. The setup and current limitations are recorded in [the CI/CD integration guide](docs/ci-cd-integration.md) and [monitoring guide](monitoring/README.md).
+Successful `main` builds are configured to deploy the two scanned images to Minikube. Prometheus and Grafana provide endpoint-health monitoring. A local Minikube deployment and monitoring stack were verified on 2026-10-02; the Jenkins-to-Minikube release path is not yet verified. The setup and current limitations are recorded in [the CI/CD integration guide](docs/ci-cd-integration.md) and [monitoring guide](monitoring/README.md).
 
 The [Member 1 frontend handoff](docs/member-1-handoff.md) records the newly integrated UI work and its remaining access-control blocker. Do not use real customer data while the public demo admin key remains accepted.

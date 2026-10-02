@@ -4,9 +4,10 @@ set -euo pipefail
 : "${BACKEND_IMAGE:?Set BACKEND_IMAGE to the scanned backend tag}"
 : "${FRONTEND_IMAGE:?Set FRONTEND_IMAGE to the scanned frontend tag}"
 : "${KUBECONFIG:?Set KUBECONFIG to the Jenkins file credential}"
+: "${MINIKUBE_BIN:=minikube}"
 
-minikube image load "$BACKEND_IMAGE"
-minikube image load "$FRONTEND_IMAGE"
+"$MINIKUBE_BIN" image load "$BACKEND_IMAGE"
+"$MINIKUBE_BIN" image load "$FRONTEND_IMAGE"
 
 kubectl apply -f kubernetes/namespace.yaml
 kubectl apply -f kubernetes/configmap.yaml

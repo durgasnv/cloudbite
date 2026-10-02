@@ -51,10 +51,10 @@ Every expected Deployment should be available, each Service should have endpoint
 Access the frontend through a local port forward:
 
 ```bash
-kubectl port-forward -n cloudbite service/cloudbite-frontend 8080:8080
+kubectl port-forward -n cloudbite service/cloudbite-frontend 18080:8080
 ```
 
-The health check is `http://localhost:8080/health`; the proxied backend check is `http://localhost:8080/api/health`.
+The health check is `http://localhost:18080/health`; the proxied backend check is `http://localhost:18080/api/health`. The local port avoids the existing Jenkins/Compose use of `8080`.
 
 ## Manifest rules
 
