@@ -7,7 +7,7 @@ This directory contains the first Minikube Deployments and Services for CloudBit
 * A running Minikube cluster.
 * `kubectl` configured to access that cluster.
 * Frontend and backend images built and loaded into Minikube.
-* No runtime Secret is required by the current application. The optional Grafana monitoring Deployment needs a local admin-password Secret.
+* No application Secret is wired into the current backend Deployment. Do not expose it publicly: the application still accepts a hard-coded demo staff key. The optional Grafana monitoring Deployment needs a local admin-password Secret.
 
 ## Intended resources
 

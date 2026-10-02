@@ -12,11 +12,12 @@ CloudBite configuration must be supplied at runtime. Do not hard-code values in 
 
 ## Current application variables and future candidates
 
-Only `PORT` is read by the current backend, which defaults to `5000`; `dotenv` loads local `.env` values if present. The other names below are future candidates and must not be added to manifests as if the application already consumes them.
+The backend reads `PORT` (default `5000`) and `ADMIN_TOKEN`; `dotenv` loads local `.env` values if present. The other names below are future candidates and must not be added to manifests as if the application already consumes them. **Setting `ADMIN_TOKEN` does not currently secure the staff endpoint:** the application also accepts a hard-coded demo key and a fallback token. Member 1 must remove those bypasses before this can be treated as a deployable credential.
 
 | Variable | Consumed by | Sensitive? | Purpose |
 | --- | --- | --- | --- |
 | `PORT` | Backend | No | Current Express listen port; defaults to `5000`. |
+| `ADMIN_TOKEN` | Backend | Yes | Current staff API token override; insecure while the hard-coded demo key and fallback remain accepted. Do not use for real customer data. |
 | `NODE_ENV` | Future runtime configuration | No | Candidate for development or production behavior. |
 | `DATABASE_URL` | Future backend integration | Yes | Candidate database connection string. |
 | `DATABASE_USER` | Future backend integration | Usually | Candidate account name, if separate from URL. |

@@ -2,6 +2,8 @@
 
 This document provides a manual and responsive smoke-test checklist for CloudBite Member 1 frontend and backend changes.
 
+The `Pass` entries below came with the `frontend-api` branch; a full browser run against the Docker or Kubernetes frontend has not been verified here. Staff/demo access is **not** secure while the public `admin123` key remains accepted by the backend. Use only synthetic customer data.
+
 ---
 
 ## 1. Automated Behavior Tests
@@ -39,7 +41,7 @@ Verify across viewports using browser DevTools Device Mode:
 | **Checkout Rejection & Recovery** | All viewports | If an order fails or prices mismatch, cart items remain preserved, submit button is re-enabled, and a clear error banner with "Review & Refresh Cart Prices" is shown. | Pass |
 | **Order Confirmation Dialog** | Mobile & Desktop | Upon successful checkout, modal appears with `role="dialog"` and `aria-modal="true"`. Focus is trapped within modal, displaying the server-confirmed order total. Pressing `Escape` closes the dialog. | Pass |
 | **Order History Privacy** | All viewports | Public visitors only see their own placed orders or can look up an order by ID. Other customers' private names, phone numbers, and addresses are never exposed. | Pass |
-| **Staff Mode Isolation** | All viewports | Status transition simulation controls are hidden from ordinary visitors. Entering the demo key (`admin123`) reveals staff controls, allowing order status updates with `x-admin-token`. | Pass |
+| **Staff Mode Isolation** | All viewports | Status transition simulation controls are hidden from ordinary visitors, but the public demo key currently grants staff access. Remove that bypass and verify real authorization before deployment. | Blocked |
 
 ---
 

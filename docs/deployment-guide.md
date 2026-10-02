@@ -28,7 +28,7 @@ Prometheus and Grafana can run in Docker Compose or in the CloudBite namespace. 
 
 The frontend NGINX configuration proxies `/api/` to the `cloudbite-backend` Service. Browser code calls the same-origin `/api` path, so no cluster address appears in the browser.
 
-Orders are currently stored in a JSON file. Do not use more than one backend replica or claim durable orders until the team agrees on database or shared storage integration.
+Orders are currently stored in a JSON file. Do not use more than one backend replica or claim durable orders until the team agrees on database or shared storage integration. The current API also accepts a public demo staff key, so keep this deployment local and use synthetic customer data until Member 1 fixes authorization.
 
 ## Try the two containers first
 
