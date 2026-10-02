@@ -33,7 +33,7 @@ Stop only this Compose project:
 docker compose -f docker/compose.yaml down
 ```
 
-Orders are currently written to `server/data/orders.json` inside the backend container. They are lost when that container is recreated. Do not use this stack as durable order storage; the application needs a database before multi-replica backend deployment.
+Orders are currently written to `server/data/orders.json` inside the backend container. The build context excludes any local copy of that file, so an image starts without order records and the backend creates the file on its first order. Orders are lost when that container is recreated. Do not use this stack as durable order storage; the application needs a database before multi-replica backend deployment.
 
 To start the optional Prometheus and Grafana stack alongside the application, follow [the monitoring guide](../monitoring/README.md).
 
@@ -44,4 +44,4 @@ To start the optional Prometheus and Grafana stack alongside the application, fo
 | `cloudbite-backend:local` | `docker/backend.Dockerfile` | `5000` | `/api/health` |
 | `cloudbite-frontend:local` | `docker/frontend.Dockerfile` | `8080` | `/health` |
 
-The backend image installs dependencies from the root `package-lock.json` and runs as the unprivileged `node` user. The frontend image uses an unprivileged NGINX base image. Neither image contains a credential or `.env` file.
+The backend image installs dependencies from the root `package-lock.json` and runs as the unprivileged `node` user. The frontend image uses an unprivileged NGINX base image. `.env` files and local order records are excluded from the build context. The current application code still accepts a hard-coded demo admin key; this is a separate release blocker that excluding files cannot fix.
