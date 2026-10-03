@@ -20,12 +20,23 @@ async function readJsonFile(filePath) {
   }
 }
 
-// GET /api/restaurants - Get all restaurants with optional search (restaurant or food) and cuisine filter (FR-01)
+function restaurantCity(restaurant) {
+  return String(restaurant.city || String(restaurant.location || '').split(',').pop()).trim();
+}
+
+// GET /api/restaurants - Filter by city, search, and cuisine (FR-01)
 router.get('/', async (req, res, next) => {
   try {
-    const { search, cuisine } = req.query;
+    const { search, cuisine, city } = req.query;
     let restaurants = await readJsonFile(restaurantsFilePath);
     let menuItems = [];
+
+    if (city && city.trim()) {
+      const selectedCity = city.trim().toLocaleLowerCase();
+      restaurants = restaurants.filter(restaurant =>
+        restaurantCity(restaurant).toLocaleLowerCase() === selectedCity
+      );
+    }
 
     if (search) {
       try {

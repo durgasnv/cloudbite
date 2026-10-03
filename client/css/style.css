@@ -480,6 +480,30 @@ button, input, select, textarea {
   width: 100%;
 }
 
+.city-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.city-filter label {
+  font-weight: 600;
+}
+
+.city-filter select {
+  min-width: 12rem;
+  padding: 0.65rem 0.85rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.city-filter select:focus-visible {
+  outline: 3px solid rgba(255, 87, 34, 0.25);
+  border-color: var(--primary);
+}
+
 .search-input-wrapper input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.75rem;

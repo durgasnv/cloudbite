@@ -7,11 +7,28 @@ let allRestaurants = [];
 let allMenuItems = [];
 let currentCuisineFilter = 'all';
 let currentSearchQuery = '';
+let currentCityFilter = '';
+
+function getRestaurantCity(restaurant) {
+  return String(restaurant.city || String(restaurant.location || '').split(',').pop()).trim();
+}
+
+function getAvailableCities(restaurants) {
+  const cities = new Map();
+  restaurants.forEach(restaurant => {
+    const city = getRestaurantCity(restaurant);
+    if (city && !cities.has(city.toLocaleLowerCase())) {
+      cities.set(city.toLocaleLowerCase(), city);
+    }
+  });
+  return [...cities.values()].sort((a, b) => a.localeCompare(b));
+}
 
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const searchParam = urlParams.get('search');
+    currentCityFilter = (urlParams.get('city') || '').trim();
     if (searchParam) {
       currentSearchQuery = searchParam.toLowerCase().trim();
       const searchInput = document.getElementById('restaurantSearchInput');
@@ -24,7 +41,15 @@ if (typeof document !== 'undefined') {
 
 async function initRestaurantsPage() {
   const searchInput = document.getElementById('restaurantSearchInput');
+  const citySelect = document.getElementById('restaurantCitySelect');
   const chips = document.querySelectorAll('.chip');
+
+  if (citySelect) {
+    citySelect.addEventListener('change', (e) => {
+      currentCityFilter = e.target.value;
+      renderFilteredRestaurants();
+    });
+  }
 
   // Search input handler
   if (searchInput) {
@@ -111,6 +136,7 @@ async function fetchRestaurants() {
     const resJson = await restaurantsRes.json();
     if (resJson.success && Array.isArray(resJson.data)) {
       allRestaurants = resJson.data;
+      populateCityOptions(allRestaurants);
     } else {
       throw new Error(resJson.message || 'Failed to parse restaurants data.');
     }
@@ -132,6 +158,18 @@ async function fetchRestaurants() {
     renderErrorState(container, 'Unable to load restaurants at this time. Please check your network connection and try again.');
     showToast('Failed to connect to backend API', 'error');
   }
+}
+
+function populateCityOptions(restaurants) {
+  const citySelect = document.getElementById('restaurantCitySelect');
+  if (!citySelect) return;
+
+  const cities = getAvailableCities(restaurants);
+  citySelect.replaceChildren(new Option('All cities', ''));
+  cities.forEach(city => citySelect.add(new Option(city, city)));
+  const selected = cities.find(city => city.toLocaleLowerCase() === currentCityFilter.toLocaleLowerCase());
+  currentCityFilter = selected || '';
+  citySelect.value = currentCityFilter;
 }
 
 function renderErrorState(container, message) {
@@ -164,11 +202,13 @@ function renderErrorState(container, message) {
   container.appendChild(emptyState);
 }
 
-function filterRestaurants(restaurants, menuItems, searchQuery, cuisineFilter) {
+function filterRestaurants(restaurants, menuItems, searchQuery, cuisineFilter, cityFilter = '') {
   const query = (searchQuery || '').toLowerCase().trim();
   const cuisine = (cuisineFilter || 'all').toLowerCase().trim();
+  const city = (cityFilter || '').toLocaleLowerCase().trim();
 
   return restaurants.filter(restaurant => {
+    if (city && getRestaurantCity(restaurant).toLocaleLowerCase() !== city) return false;
     // 1. Matches restaurant name, cuisine, location
     const nameMatch = (restaurant.name || '').toLowerCase().includes(query);
     const cuisineMatch = (restaurant.cuisine || '').toLowerCase().includes(query);
@@ -204,7 +244,7 @@ function renderFilteredRestaurants() {
   const countLabel = document.getElementById('restaurantCountLabel');
   if (!container) return;
 
-  const filtered = filterRestaurants(allRestaurants, allMenuItems, currentSearchQuery, currentCuisineFilter);
+  const filtered = filterRestaurants(allRestaurants, allMenuItems, currentSearchQuery, currentCuisineFilter, currentCityFilter);
 
   if (countLabel) {
     countLabel.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? 'restaurant' : 'restaurants'}`;
@@ -258,12 +298,13 @@ function renderFilteredRestaurants() {
       img.src = fallbackImg;
     });
 
-    const timeBadge = document.createElement('span');
-    timeBadge.className = 'restaurant-time-badge';
-    timeBadge.textContent = `⏱️ ${restaurant.deliveryTime || '30 mins'}`;
-
     imgWrapper.appendChild(img);
-    imgWrapper.appendChild(timeBadge);
+    if (restaurant.deliveryTime) {
+      const timeBadge = document.createElement('span');
+      timeBadge.className = 'restaurant-time-badge';
+      timeBadge.textContent = `⏱️ ${restaurant.deliveryTime}`;
+      imgWrapper.appendChild(timeBadge);
+    }
 
     // Body section
     const body = document.createElement('div');
@@ -278,7 +319,7 @@ function renderFilteredRestaurants() {
 
     const rating = document.createElement('span');
     rating.className = 'rating-badge';
-    rating.textContent = `★ ${restaurant.rating || '4.0'}`;
+    rating.textContent = restaurant.rating == null ? 'No rating' : `★ ${restaurant.rating}`;
 
     header.appendChild(name);
     header.appendChild(rating);
@@ -336,6 +377,7 @@ function renderFilteredRestaurants() {
 // Export for Node unit testing
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    filterRestaurants
+    filterRestaurants,
+    getAvailableCities
   };
 }
