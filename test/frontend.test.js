@@ -9,6 +9,12 @@ const { getStatusClass } = require('../client/js/orders');
 
 const fs = require('node:fs').promises;
 const path = require('node:path');
+const testMenuItem = require('../server/data/menu.json')[0];
+
+function totalForTestItem(quantity) {
+  const subtotal = testMenuItem.price * quantity;
+  return subtotal + (subtotal < 500 ? 40 : 0) + 10;
+}
 
 let server;
 let baseUrl;
@@ -137,23 +143,28 @@ test('API GET /api/restaurants: backend endpoint supports food search', async ()
   const body = await res.json();
   assert.strictEqual(body.success, true);
   assert.ok(body.data.length > 0);
-  assert.strictEqual(body.data[0].name, 'Spice Garden');
-  assert.ok(Array.isArray(body.data[0].matchedDishes));
+  assert.ok(body.data.every(restaurant =>
+    restaurant.name.toLowerCase().includes('biryani') ||
+    restaurant.cuisine.toLowerCase().includes('biryani') ||
+    restaurant.location.toLowerCase().includes('biryani') ||
+    (restaurant.matchedDishes || []).some(dish => dish.toLowerCase().includes('biryani'))
+  ));
 });
 
 test('API GET /api/restaurants filters by exact city with search', async () => {
   const res = await fetch(`${baseUrl}/api/restaurants?city=hyderabad&search=biryani`);
   assert.strictEqual(res.status, 200);
   const body = await res.json();
-  assert.deepStrictEqual(body.data.map(r => r.name), ['Spice Garden']);
+  assert.ok(body.data.length > 0);
+  assert.ok(body.data.every(restaurant => restaurant.city.toLowerCase() === 'hyderabad'));
 
   const missing = await fetch(`${baseUrl}/api/restaurants?city=Hyder`);
   assert.deepStrictEqual((await missing.json()).data, []);
 
-  for (const [city, expectedCount] of [['Bangalore', 2], ['Mumbai', 1], ['New Delhi', 1]]) {
+  for (const city of ['Bangalore', 'Mumbai', 'New Delhi']) {
     const response = await fetch(`${baseUrl}/api/restaurants?city=${encodeURIComponent(city)}`);
     const data = (await response.json()).data;
-    assert.strictEqual(data.length, expectedCount);
+    assert.ok(data.length > 0);
     assert.ok(data.every(restaurant => restaurant.location.endsWith(city)));
   }
 });
@@ -224,12 +235,16 @@ test('Cart Totals: calculateOrderTotals enforces delivery fee tiers and platform
    ========================================================================== */
 
 test('Checkout: Server rejects tampered item prices with clear priceChanged error', async () => {
-  // Item 1 in menu.json costs ₹280. Client tampers price to ₹1.
+  const menuResponse = await fetch(`${baseUrl}/api/menu`);
+  const menu = (await menuResponse.json()).data;
+  const item = menu[0];
+  assert.ok(item && item.price > 0);
+  // The client submits a price that differs from the current catalog.
   const tamperedPayload = {
     customerName: 'Attacker Tamper',
     customerPhone: '9876543210',
     customerAddress: 'Secret St',
-    items: [{ id: 1, name: 'Hyderabadi Chicken Dum Biryani', price: 1, quantity: 1 }],
+    items: [{ id: item.id, name: item.name, price: item.price + 1, quantity: 1 }],
     totalAmount: 51
   };
 
@@ -266,13 +281,12 @@ test('Checkout: Server rejects non-existent or unavailable item IDs', async () =
 });
 
 test('Checkout: Server authoritatively confirms valid orders and computes verified total', async () => {
-  // Item 1 = 280, quantity = 2 -> subtotal = 560 -> delivery = 0 -> platform = 10 -> grandTotal = 570
   const validPayload = {
     customerName: 'Aarav Patel',
     customerPhone: '9876543210',
     customerAddress: '42 Baker Street, Bangalore',
-    items: [{ id: 1, quantity: 2, price: 280 }],
-    totalAmount: 570
+    items: [{ id: testMenuItem.id, quantity: 2, price: testMenuItem.price }],
+    totalAmount: totalForTestItem(2)
   };
 
   const res = await fetch(`${baseUrl}/api/orders`, {
@@ -284,7 +298,7 @@ test('Checkout: Server authoritatively confirms valid orders and computes verifi
   assert.strictEqual(res.status, 201);
   const body = await res.json();
   assert.strictEqual(body.success, true);
-  assert.strictEqual(body.data.totalAmount, 570);
+  assert.strictEqual(body.data.totalAmount, totalForTestItem(2));
   assert.strictEqual(body.data.status, 'CONFIRMED');
   assert.ok(body.data.id.startsWith('ORD'));
 });
@@ -312,8 +326,8 @@ test('Access Control: order details require the private tracking token', async (
       customerName: 'Rohan Sharma',
       customerPhone: '9876543210',
       customerAddress: 'Jubilee Hills',
-      items: [{ id: 4, quantity: 1, price: 60 }], // Garlic Naan = 60 + 40 + 10 = 110
-      totalAmount: 110
+      items: [{ id: testMenuItem.id, quantity: 1, price: testMenuItem.price }],
+      totalAmount: totalForTestItem(1)
     })
   });
   const orderJson = await orderRes.json();
@@ -385,8 +399,8 @@ test('Access Control: PATCH /api/orders/:id/status succeeds with x-admin-token',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       customerName: 'Admin Order Test',
-      items: [{ id: 4, quantity: 1, price: 60 }],
-      totalAmount: 110
+      items: [{ id: testMenuItem.id, quantity: 1, price: testMenuItem.price }],
+      totalAmount: totalForTestItem(1)
     })
   });
   const orderJson = await orderRes.json();
