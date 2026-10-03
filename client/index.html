@@ -121,6 +121,20 @@
         </div>
       </section>
 
+      <!-- Live catalog preview -->
+      <section class="home-featured-section" aria-labelledby="featuredRestaurantsTitle">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title" id="featuredRestaurantsTitle">Explore Restaurants</h2>
+            <p class="section-subtitle">A preview of the historical demo catalog; browse all cities for more.</p>
+          </div>
+          <a href="restaurants.html" class="btn btn-outline btn-sm">See All Restaurants →</a>
+        </div>
+        <div id="featuredRestaurants" class="restaurants-grid" aria-live="polite">
+          <p>Loading restaurants...</p>
+        </div>
+      </section>
+
       <!-- Why Choose CloudBite -->
       <section style="background: var(--surface); padding: 3rem 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 4rem;">
         <div style="text-align: center; max-width: 600px; margin: 0 auto 2.5rem;">
@@ -208,5 +222,6 @@
   </footer>
 
   <script src="js/app.js"></script>
+  <script src="js/home.js"></script>
 </body>
 </html>

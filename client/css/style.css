@@ -573,6 +573,10 @@ button, input, select, textarea {
   gap: 1.75rem;
 }
 
+.home-featured-section {
+  margin-bottom: 4rem;
+}
+
 .restaurant-card {
   background-color: var(--surface);
   border-radius: var(--radius-md);

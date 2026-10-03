@@ -9,7 +9,9 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": 800.0,
+    "source": "Zomato dataset",
+    "metadataSource": "restaurants.csv"
   },
   {
     "id": 2,
@@ -21,7 +23,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 3,
@@ -33,7 +36,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 4,
@@ -45,7 +49,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 5,
@@ -57,7 +62,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 6,
@@ -69,7 +75,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 7,
@@ -81,7 +88,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 8,
@@ -93,7 +101,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 9,
@@ -105,7 +114,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 10,
@@ -117,7 +127,9 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": 1200.0,
+    "source": "Zomato dataset",
+    "metadataSource": "restaurants.csv"
   },
   {
     "id": 11,
@@ -129,7 +141,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 12,
@@ -141,7 +154,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 13,
@@ -153,7 +167,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 14,
@@ -165,7 +180,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 15,
@@ -177,7 +193,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 16,
@@ -189,7 +206,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 17,
@@ -201,7 +219,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 18,
@@ -213,7 +232,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 19,
@@ -225,7 +245,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 20,
@@ -237,7 +258,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 21,
@@ -249,7 +271,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 22,
@@ -261,7 +284,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 23,
@@ -273,7 +297,9 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": 500.0,
+    "source": "Zomato dataset",
+    "metadataSource": "restaurants.csv"
   },
   {
     "id": 24,
@@ -285,7 +311,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 25,
@@ -297,7 +324,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 26,
@@ -309,7 +337,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 27,
@@ -321,7 +350,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 28,
@@ -333,7 +363,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 29,
@@ -345,7 +376,9 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": 1400.0,
+    "source": "Zomato dataset",
+    "metadataSource": "restaurants.csv"
   },
   {
     "id": 30,
@@ -357,7 +390,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 31,
@@ -369,7 +403,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 32,
@@ -381,7 +416,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 33,
@@ -393,7 +429,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 34,
@@ -405,7 +442,9 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": 1500.0,
+    "source": "Zomato dataset",
+    "metadataSource": "restaurants.csv"
   },
   {
     "id": 35,
@@ -417,7 +456,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 36,
@@ -429,7 +469,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 37,
@@ -441,7 +482,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 38,
@@ -453,7 +495,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 39,
@@ -465,7 +508,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 40,
@@ -477,7 +521,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 41,
@@ -489,7 +534,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 42,
@@ -501,7 +547,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 43,
@@ -513,7 +560,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 44,
@@ -525,7 +573,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 45,
@@ -537,7 +586,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 46,
@@ -549,7 +599,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 47,
@@ -561,7 +612,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 48,
@@ -573,7 +625,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 49,
@@ -585,7 +638,8 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
   },
   {
     "id": 50,
@@ -597,6 +651,678 @@
     "description": "",
     "image": null,
     "deliveryTime": null,
-    "priceForTwo": null
+    "priceForTwo": null,
+    "source": "Zomato dataset"
+  },
+  {
+    "id": 51,
+    "name": "Gopal Mistanna Bhandar",
+    "city": "Agartala",
+    "location": "Hapania, Agartala",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 52,
+    "name": "Nini's Kitchen",
+    "city": "Ahmedabad",
+    "location": "Sola, Ahmedabad",
+    "cuisine": "North Indian,  Italian,  Continental,  Lebanese,  Shakes",
+    "rating": 4.3,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 1400.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 53,
+    "name": "Domino's Pizza",
+    "city": "Aizawl",
+    "location": "Only_Dominos_Aizawl, Aizawl",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 54,
+    "name": "Paakashala",
+    "city": "Bangalore",
+    "location": "Sahakara Nagar, Bangalore",
+    "cuisine": "North Indian,  South Indian,  Chinese,  Drinks",
+    "rating": 4.2,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 600.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 55,
+    "name": "hotel Toshali",
+    "city": "Bhubaneswar",
+    "location": "Patia, Bhubaneswar",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 56,
+    "name": "Saffron",
+    "city": "Chandigarh",
+    "location": "Kalka, Chandigarh",
+    "cuisine": "North Indian,  North West Frontier,  Seafood",
+    "rating": 4.4,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 2400.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 57,
+    "name": "Sandy's Chocolate Laboratory",
+    "city": "Chennai",
+    "location": "Nungambakkam, Chennai",
+    "cuisine": "Continental,  European,  Desserts",
+    "rating": 4.5,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 1200.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 58,
+    "name": "Kalsang Friends Corner",
+    "city": "Dehradun",
+    "location": "Hathibarkala Salwala, Dehradun",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 59,
+    "name": "Valley Vista",
+    "city": "Gangtok",
+    "location": "Gangtok, Gangtok",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 60,
+    "name": "Tossin Pizza",
+    "city": "Gurgaon",
+    "location": "Vasant Kunj, Gurgaon",
+    "cuisine": "Pizza,  Italian",
+    "rating": 4.5,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 800.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 61,
+    "name": "McDonald's",
+    "city": "Guwahati",
+    "location": "Ganeshguri, Guwahati",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 62,
+    "name": "Bikanervala",
+    "city": "Hyderabad",
+    "location": "aramghar, Hyderabad",
+    "cuisine": "Mithai,  North Indian,  Chinese,  South Indian,  Street Food,  Fast Food",
+    "rating": 4.3,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 1000.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 63,
+    "name": "Khullak Cafe",
+    "city": "Imphal",
+    "location": "Kwakeithel, Imphal",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 64,
+    "name": "McDonald's",
+    "city": "Indore",
+    "location": "Khajrana, Indore",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 65,
+    "name": "Rominus Pizza and Burger",
+    "city": "Jaipur",
+    "location": "Jagatpura, Jaipur",
+    "cuisine": "Fast Food,  Pizza",
+    "rating": 3.8,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 600.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 66,
+    "name": "Taco Bell",
+    "city": "Kochi",
+    "location": "Lulu Kochi, Kochi",
+    "cuisine": "Mexican,  Fast Food",
+    "rating": 3.5,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 500.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 67,
+    "name": "Domino's Pizza",
+    "city": "Kohima",
+    "location": "High School Colony, Kohima",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 68,
+    "name": "Cocoa Bakery",
+    "city": "Kolkata",
+    "location": "Block A, Kolkata",
+    "cuisine": "Desserts,  Bakery and Confectionary",
+    "rating": 4.6,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 500.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 69,
+    "name": "Madhurima Veg",
+    "city": "Lucknow",
+    "location": "Ashiyana, Lucknow",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 70,
+    "name": "Aromas Cafe & Bistro",
+    "city": "Mumbai",
+    "location": "Thane West, Mumbai",
+    "cuisine": "Italian,  Fast Food,  Desserts,  Coffee,  Tea",
+    "rating": 2.8,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 1500.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 71,
+    "name": "Wow! Momo",
+    "city": "New Delhi",
+    "location": "Nehru Nagar, New Delhi",
+    "cuisine": "Fast Food,  Tibetan",
+    "rating": 3.6,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 400.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 72,
+    "name": "McDonald's",
+    "city": "Panaji",
+    "location": "Calangute, Panaji",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 73,
+    "name": "Paprika - Pramod Laddu Bhandar",
+    "city": "Patna",
+    "location": "near vaishali golambar road, Patna",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 74,
+    "name": "Moti Mahal",
+    "city": "Raipur",
+    "location": "Vishal Nagar, Raipur",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 75,
+    "name": "Kaveri - Lalpur",
+    "city": "Ranchi",
+    "location": "Lalpur, Ranchi",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 76,
+    "name": "Trelly",
+    "city": "Shillong",
+    "location": "Laban, Shillong",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 77,
+    "name": "Premjees",
+    "city": "Shimla",
+    "location": "Solan Town, Shimla",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 78,
+    "name": "Central Perk",
+    "city": "Srinagar",
+    "location": "Rajbagh, Srinagar",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 79,
+    "name": "Daya Hari Mithai",
+    "city": "Agartala",
+    "location": "Kaman Chowmuhani, Agartala",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 80,
+    "name": "1944 The Hocco kitchen",
+    "city": "Ahmedabad",
+    "location": "Bopal, Ahmedabad",
+    "cuisine": "North Indian,  Continental,  Desserts",
+    "rating": 4.3,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 800.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 81,
+    "name": "Roti Tarka",
+    "city": "Aizawl",
+    "location": "Upper Republic, Aizawl",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 82,
+    "name": "Kanti Sweets",
+    "city": "Bangalore",
+    "location": "Sanjay Nagar, New BEL Road, Bangalore",
+    "cuisine": "Mithai,  Desserts",
+    "rating": 4.3,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 500.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 83,
+    "name": "Priya Restaurant",
+    "city": "Bhubaneswar",
+    "location": "Kalinga Nagar, Bhubaneswar",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 84,
+    "name": "Roll Xpress",
+    "city": "Chandigarh",
+    "location": "Sector 67, Chandigarh",
+    "cuisine": "Fast Food",
+    "rating": 4.2,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 300.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 85,
+    "name": "Wow! Momo",
+    "city": "Chennai",
+    "location": "Thandalam, Chennai",
+    "cuisine": "Chinese,  Tibetan",
+    "rating": 3.3,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 400.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 86,
+    "name": "Pandit Ji Sweets & Restaurant Dairy",
+    "city": "Dehradun",
+    "location": "Chironwali, Dehradun",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 87,
+    "name": "Domino's Pizza",
+    "city": "Gangtok",
+    "location": "DISTRICT COURT, Gangtok",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 88,
+    "name": "Subway",
+    "city": "Gurgaon",
+    "location": "Chhatarpur, Gurgaon",
+    "cuisine": "Health Food",
+    "rating": 4.2,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 500.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 89,
+    "name": "Cafe Go Green",
+    "city": "Guwahati",
+    "location": "Azara, Guwahati",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 90,
+    "name": "Harley's Fine Baking",
+    "city": "Hyderabad",
+    "location": "Lingampally & Nallagandla, Hyderabad",
+    "cuisine": "Continental,  Desserts,  Shakes",
+    "rating": 4.3,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 500.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 91,
+    "name": "Domino's Pizza",
+    "city": "Imphal",
+    "location": "Keishamthong, Imphal",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 92,
+    "name": "McDonald's",
+    "city": "Indore",
+    "location": "South Tukoganj, Indore",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 93,
+    "name": "Rominus Pizza And Burger",
+    "city": "Jaipur",
+    "location": "Jhotwara, Jaipur",
+    "cuisine": "Fast Food,  Pizza",
+    "rating": 3.8,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 600.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 94,
+    "name": "McDonald's",
+    "city": "Kochi",
+    "location": "MG Road, Kochi",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 95,
+    "name": "Domino's Pizza",
+    "city": "Kohima",
+    "location": "Kohima Locality, Kohima",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 96,
+    "name": "Wow! Momo",
+    "city": "Kolkata",
+    "location": "DumDum, Kolkata",
+    "cuisine": "Fast Food,  Tibetan",
+    "rating": 4.0,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 400.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 97,
+    "name": "Lazeez - Rooftop Lounge",
+    "city": "Lucknow",
+    "location": "Gomti Nagar, Lucknow",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
+  },
+  {
+    "id": 98,
+    "name": "Aromas Cafe & Bistro",
+    "city": "Mumbai",
+    "location": "Seawoods, Mumbai",
+    "cuisine": "Italian,  Fast Food,  Desserts,  Coffee,  Tea",
+    "rating": 2.8,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 1500.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 99,
+    "name": "Mad Over Donuts",
+    "city": "New Delhi",
+    "location": "Dwarka, New Delhi",
+    "cuisine": "Desserts,  Doughnuts",
+    "rating": 4.3,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": 400.0,
+    "source": "Swiggy menu dataset",
+    "metadataSource": "restaurants.csv"
+  },
+  {
+    "id": 100,
+    "name": "Viggis",
+    "city": "Panaji",
+    "location": "Nor_Baga Calangute, Panaji",
+    "cuisine": "Various",
+    "rating": null,
+    "description": "",
+    "image": null,
+    "deliveryTime": null,
+    "priceForTwo": null,
+    "source": "Swiggy menu dataset"
   }
 ]

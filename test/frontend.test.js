@@ -6,6 +6,7 @@ const { validateCartItem, sanitizeImageUrl, formatPrice, getMyOrderAccess, saveM
 const { filterRestaurants, getAvailableCities } = require('../client/js/restaurants');
 const { calculateOrderTotals } = require('../client/js/cart');
 const { getStatusClass } = require('../client/js/orders');
+const { pickFeaturedRestaurants } = require('../client/js/home');
 
 const fs = require('node:fs').promises;
 const path = require('node:path');
@@ -167,6 +168,22 @@ test('API GET /api/restaurants filters by exact city with search', async () => {
     assert.ok(data.length > 0);
     assert.ok(data.every(restaurant => restaurant.location.endsWith(city)));
   }
+});
+
+test('Homepage serves a mixed-source restaurant preview', async () => {
+  const page = await fetch(`${baseUrl}/`);
+  const html = await page.text();
+  assert.strictEqual(page.status, 200);
+  assert.ok(html.includes('id="featuredRestaurants"'));
+  assert.ok(html.includes('js/home.js'));
+
+  const response = await fetch(`${baseUrl}/api/restaurants`);
+  const body = await response.json();
+  assert.strictEqual(body.count, 100);
+  const featured = pickFeaturedRestaurants(body.data);
+  assert.strictEqual(featured.length, 6);
+  assert.deepStrictEqual(new Set(featured.map(restaurant => restaurant.source)),
+    new Set(['Zomato dataset', 'Swiggy menu dataset']));
 });
 
 /* ==========================================================================
