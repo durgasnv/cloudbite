@@ -33,7 +33,13 @@ Stop only this Compose project:
 docker compose -f docker/compose.yaml down
 ```
 
-Orders are currently written to `server/data/orders.json` inside the backend container. The build context excludes any local copy of that file, so an image starts without order records and the backend creates the file on its first order. Orders are lost when that container is recreated. Do not use this stack as durable order storage; the application needs a database before multi-replica backend deployment.
+The base Compose stack writes orders to `server/data/orders.json` inside the backend container. The build context excludes any local copy of that file, so a new image starts without order records. Orders are lost when the container is recreated. For persistent order storage and a configured staff token, set private `CLOUDBITE_DB_PASSWORD` and `CLOUDBITE_ADMIN_TOKEN` values, then run:
+
+```bash
+docker compose -f docker/compose.yaml -f docker/compose.database.yaml up --build -d
+```
+
+This overlay adds PostgreSQL with a named Docker volume and configures the backend to use it. Keep the volume if you want orders to survive a Compose restart.
 
 To start the optional Prometheus and Grafana stack alongside the application, follow [the monitoring guide](../monitoring/README.md).
 
@@ -44,4 +50,4 @@ To start the optional Prometheus and Grafana stack alongside the application, fo
 | `cloudbite-backend:local` | `docker/backend.Dockerfile` | `5000` | `/api/health` |
 | `cloudbite-frontend:local` | `docker/frontend.Dockerfile` | `8080` | `/health` |
 
-The backend image installs dependencies from the root `package-lock.json` and runs as the unprivileged `node` user. The frontend image uses an unprivileged NGINX base image. `.env` files and local order records are excluded from the build context. The current application code still accepts a hard-coded demo admin key; this is a separate release blocker that excluding files cannot fix.
+The backend image installs dependencies from the root `package-lock.json` and runs as the unprivileged `node` user. The frontend image uses an unprivileged NGINX base image. `.env` files and local order records are excluded from the build context. Staff access requires a private configured `ADMIN_TOKEN`; the former public demo key is rejected. Customer order lookup requires its private tracking token.

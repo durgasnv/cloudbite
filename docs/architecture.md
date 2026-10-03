@@ -1,69 +1,44 @@
 # CloudBite Architecture
 
-## Current application
-
-The application can still run as one Express process on port `5000`, serving the static files in `client/`, the REST API under `/api`, and `GET /api/health`. The container setup separates static file serving into NGINX on port `8080`, which proxies `/api/` to Express. Restaurant, menu, and order data remain in `server/data/*.json`. Blackbox Exporter probes the frontend and backend health routes for Prometheus; the backend has no native Prometheus metrics endpoint yet. The Jenkinsfile defines quality, secret, dependency, and image gates before a main-branch Minikube deployment; see [CI/CD integration](ci-cd-integration.md). The [Member 1 frontend handoff](member-1-handoff.md) records the integrated UI work and the remaining access-control gap.
-
-## Target deployment view
+## Application and request flow
 
 ```text
-Browser
-  |
-  v
-Frontend Service ----> Frontend Pods
-  |
-  | API requests
-  v
-Backend Service -----> Backend Pods -----> Future Database
+Browser -> frontend Service -> NGINX frontend Pods -> backend Service -> Express backend Pod
+                                  |                                      |
+                                  +---- /api reverse proxy -------------+----> PostgreSQL Service
+                                                                              -> PostgreSQL StatefulSet/PVC
 
-Prometheus -----> Blackbox Exporter -----> /health and /api/health
-    |
-    +-----------> kube-state-metrics ----> Pod/Deployment status (Kubernetes only)
-    |
-    v
-Grafana
+Prometheus -> Blackbox Exporter -> frontend /health and backend /api/health
+           -> kube-state-metrics -> Deployment replicas and Pod restarts
+Grafana    -> Prometheus         -> health and Kubernetes dashboards
 ```
 
-The frontend NGINX server routes browser requests for `/api` to the backend Service. The backend owns restaurant, menu, and order APIs; cart state is held in browser local storage. The backend will eventually connect to the selected database. Prometheus scrapes Blackbox Exporter health probes, and in Kubernetes also scrapes kube-state-metrics for replica and restart status. Prometheus can scrape backend request metrics after an endpoint is implemented.
+In Kubernetes, two frontend replicas serve the static files in `client/`. NGINX proxies `/api/` requests to the backend Service, so the browser uses same-origin API paths and does not need an internal Kubernetes address. The Express backend serves restaurants and menus from `server/data/restaurants.json` and `server/data/menu.json`. It stores orders in PostgreSQL through the `cloudbite-postgres` Service. A 1 Gi persistent volume claim keeps the database files across Pod replacement. A single-process local run can serve both frontend and API on port `5000`; without PostgreSQL configuration, local orders use `server/data/orders.json`.
+
+## Application features
+
+The restaurant page loads restaurant and menu records, derives its city selector from the available restaurant cities, and combines city, search, and cuisine filters. The backend also supports `GET /api/restaurants?city=...`; city matching is exact and case-insensitive. Restaurant pages request their menus from `GET /api/restaurants/:id/menu`. The cart is stored in browser `localStorage`. Checkout validates items and prices against the server menu, calculates fees on the server, and creates a simulated order. Customer order lookup requires the private token issued at checkout; staff order listing and status changes require a configured `ADMIN_TOKEN`. See [How CloudBite runs](how-cloudbite-runs.md) for the full feature walkthrough and access URLs.
 
 ## Kubernetes resources
 
 | Component | Kubernetes resource | Responsibility |
 | --- | --- | --- |
-| Frontend | Deployment and Service | Runs multiple frontend replicas and exposes a stable in-cluster endpoint. |
-| Backend | Deployment and Service | Runs the REST API and health check. |
-| Database | Chosen by application team | Persists application data; its deployment model is still to be agreed. |
-| Configuration | ConfigMap | Holds non-sensitive runtime configuration. |
-| Secrets | Secret reference | Supplies sensitive values without committing them to the repository. |
+| Frontend | Deployment and ClusterIP Service | Serves the UI and forwards `/api/` to the backend. |
+| Backend | Deployment and ClusterIP Service | Runs the REST API and checks order storage in `/api/health`. |
+| Database | PostgreSQL StatefulSet, Service, and persistent volume claim | Stores orders independently of backend Pods. |
+| Configuration | ConfigMap | Holds non-sensitive runtime settings. |
+| Credentials | `cloudbite-secrets` Secret | Supplies PostgreSQL password and staff token. |
 | Blackbox Exporter | Deployment and Service | Probes frontend and backend health endpoints. |
-| kube-state-metrics | Deployment, Service, and namespaced RBAC | Exposes application Pod and Deployment status. |
-| Prometheus | Deployment and Service | Scrapes and stores probe and Kubernetes status metrics. |
-| Grafana | Deployment and Service | Displays health and Kubernetes status dashboards. |
+| kube-state-metrics | Deployment, Service, and namespaced RBAC | Exposes Deployment replicas and Pod restarts. |
+| Prometheus | Deployment and Service | Collects health probes and Kubernetes state metrics. |
+| Grafana | Deployment and Service | Displays the two CloudBite dashboards. |
 
-## Naming and connectivity rules
+All resources use the `cloudbite` namespace. Components communicate through Service names, never Pod IPs. PostgreSQL and application Services stay internal; local browser access uses `kubectl port-forward`. Readiness and liveness probes use `/health` for the frontend and `/api/health` for the backend. The backend health route checks PostgreSQL when configured.
 
-* All CloudBite resources should use the `cloudbite` namespace.
-* Pods are replaceable. Never configure one component to call another using a pod IP.
-* Use the backend Service name in the frontend reverse proxy; browser JavaScript cannot resolve Kubernetes Service DNS names.
-* A container must listen on `0.0.0.0`, not only `localhost`, so Kubernetes can reach it.
-* Ports, service names, environment variables, health paths, and metric paths are application-contract values. Record their final values in `docs/deployment-guide.md` after agreeing them with Member 1.
+## Delivery and monitoring
 
-## Configuration boundaries
+The root `Jenkinsfile` runs tests, SonarQube quality analysis, Gitleaks, npm audit, Docker builds, and Trivy image scans. A successful `main` build is configured to deploy those scanned image tags with `scripts/deploy-minikube.sh`. The local Minikube application deployment was verified, but the Jenkins release path has not been run end to end. See [CI/CD integration](ci-cd-integration.md).
 
-```text
-Repository
-  ├── Dockerfiles: build instructions; no secrets
-  ├── Kubernetes ConfigMap: public runtime values
-  ├── Kubernetes Secret: runtime sensitive values; no real values committed
-  └── Local .env: developer-only values; ignored by Git
-```
+Prometheus asks Blackbox Exporter to request both health URLs and scrapes kube-state-metrics for replica and restart data. Grafana reads Prometheus. Native backend request metrics, CPU/memory graphs, and durable Prometheus storage are not implemented. See [monitoring](../monitoring/README.md).
 
-## Request and metrics flow
-
-1. A user opens the frontend.
-2. The frontend sends an API request to the backend Service.
-3. The backend reads or writes the current JSON data files; a database is planned.
-4. The backend returns an API response.
-5. Blackbox Exporter probes the two health routes and Prometheus collects the results.
-6. In Kubernetes, kube-state-metrics exposes Deployment replicas and Pod restarts to Prometheus.
-7. Grafana queries Prometheus for the health and Kubernetes status dashboards.
+Keep secrets out of Dockerfiles, ConfigMaps, and Git. Create the required Kubernetes Secrets from private values as described in [configuration](configuration.md). Deleting the database volume claim or namespace can remove order data.

@@ -10,43 +10,39 @@ CloudBite configuration must be supplied at runtime. Do not hard-code values in 
 | Sensitive configuration | Database password, JWT secret, API token | Kubernetes Secret or uncommitted local `.env` file |
 | Build configuration | Node version, build command | Dockerfile or package configuration |
 
-## Current application variables and future candidates
+## Current application variables
 
-The backend reads `PORT` (default `5000`) and `ADMIN_TOKEN`; `dotenv` loads local `.env` values if present. The other names below are future candidates and must not be added to manifests as if the application already consumes them. **Setting `ADMIN_TOKEN` does not currently secure the staff endpoint:** the application also accepts a hard-coded demo key and a fallback token. Member 1 must remove those bypasses before this can be treated as a deployable credential.
+The backend reads `PORT` (default `5000`), `ADMIN_TOKEN`, and PostgreSQL connection variables. `dotenv` loads local `.env` values if present. Without PostgreSQL settings, orders use `server/data/orders.json` for local development only. Staff mode stays disabled when `ADMIN_TOKEN` is unset. The former public demo keys are rejected.
 
 | Variable | Consumed by | Sensitive? | Purpose |
 | --- | --- | --- | --- |
 | `PORT` | Backend | No | Current Express listen port; defaults to `5000`. |
-| `ADMIN_TOKEN` | Backend | Yes | Current staff API token override; insecure while the hard-coded demo key and fallback remain accepted. Do not use for real customer data. |
-| `NODE_ENV` | Future runtime configuration | No | Candidate for development or production behavior. |
-| `DATABASE_URL` | Future backend integration | Yes | Candidate database connection string. |
-| `DATABASE_USER` | Future backend integration | Usually | Candidate account name, if separate from URL. |
-| `DATABASE_PASSWORD` | Future backend integration | Yes | Candidate password, if separate from URL. |
-| `JWT_SECRET` | Future authentication | Yes | Candidate signing secret. |
-| `API_BASE_URL` | Future frontend configuration | No | Candidate only if same-origin `/api` routing is replaced. The current frontend does not read this variable. |
+| `ADMIN_TOKEN` | Backend | Yes | Staff API token. Set a strong, private value; `admin123` and `admin-secret-key` are rejected. |
+| `DATABASE_URL` | Backend | Yes | PostgreSQL URL. Takes precedence over `PGHOST` settings. |
+| `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` | Backend | Password is sensitive | PostgreSQL connection when `DATABASE_URL` is unset. |
+| `NODE_ENV` | Runtime | No | Node.js environment. |
 
 ## Local development
 
-1. Copy `.env.example` to `.env` when the application team provides it.
-2. Fill in local, non-production values.
-3. Confirm `.env` is covered by `.gitignore`.
-4. Start the application using the method documented by Member 1.
+1. Use `npm ci` and `npm start` for JSON-backed local development, or set `DATABASE_URL` to use PostgreSQL.
+2. To run PostgreSQL with Docker Compose, supply `CLOUDBITE_DB_PASSWORD` and `CLOUDBITE_ADMIN_TOKEN`, then run `docker compose -f docker/compose.yaml -f docker/compose.database.yaml up --build`.
+3. Keep any local `.env` file out of Git; `.gitignore` already excludes it.
 
 Never paste local `.env` values into issues, pull requests, commits, screenshots, or chat.
 
 ## Kubernetes configuration
 
-Use a ConfigMap for non-sensitive values and reference it from the appropriate Deployment. Use a Kubernetes Secret for sensitive values. Commit only a template such as `kubernetes/secrets.example.yaml` with empty values or clearly non-working placeholders.
+Use a ConfigMap for non-sensitive values and a Kubernetes Secret for the PostgreSQL password and staff token. The Deployment and PostgreSQL StatefulSet require `cloudbite-secrets` in the `cloudbite` namespace with keys `postgres-password` and `admin-token`. Create it before deployment; do not commit it.
 
 Example Secret creation for local use:
 
 ```bash
-kubectl create secret generic cloudbite-secrets \
-  --namespace cloudbite \
-  --from-literal=DATABASE_URL='local-value-not-to-be-committed'
+kubectl apply -f kubernetes/namespace.yaml
+kubectl create secret generic cloudbite-secrets --namespace cloudbite \
+  --from-env-file=/path/to/private/cloudbite-secrets.env
 ```
 
-Do not put a real `DATABASE_URL`, password, token, or signing key in a YAML file committed to Git.
+The private env file must contain `postgres-password=...` and `admin-token=...`. Do not put real passwords or tokens in committed YAML. The PostgreSQL volume claim holds order data across pod replacement; back it up before removing the namespace or volume.
 
 ## Pre-commit check
 

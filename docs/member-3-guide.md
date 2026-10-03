@@ -14,7 +14,7 @@ Your main areas are:
 
 Do not add application features, credentials, real secrets, or cloud infrastructure unless the team agrees to expand the scope.
 
-Current branch status: the frontend and backend Dockerfiles, local Compose stack, Minikube workloads, and health-probe monitoring configuration are present. Runtime container and cluster validation is still pending. Request and resource metrics need more instrumentation or cluster metric sources.
+Current branch status: the Docker images, local Compose stack, PostgreSQL-backed Minikube workloads, and health-probe monitoring were verified locally. The Jenkins release path still needs an operational release agent and end-to-end validation. Request and resource metrics need more instrumentation or cluster metric sources.
 
 ## Concepts you need first
 
@@ -69,8 +69,8 @@ The merged application provides these confirmed details:
 * Root `npm start` runs the Express backend and serves the static `client/` frontend.
 * The backend uses port `5000` by default and has a lightweight `GET /api/health` endpoint.
 * API requests use `/api`; browser cart state is in local storage.
-* The current backend stores restaurants, menus, and orders in JSON files under `server/data/`.
-* The backend does not yet expose Prometheus metrics or use a database connection variable.
+* Restaurants and menus are JSON files under `server/data/`. Orders use PostgreSQL when configured and local JSON otherwise.
+* The backend does not yet expose Prometheus metrics. It reads `DATABASE_URL` or standard `PG*` connection variables for PostgreSQL.
 
 The first deployment uses a separate NGINX frontend image that proxies `/api/` to the backend Service. Agree on these remaining details with Member 1 before adding database or metrics resources:
 
@@ -113,7 +113,7 @@ For both frontend and backend deployments:
 
 * Set explicit container ports.
 * Define CPU and memory requests and limits with values appropriate to the local cluster.
-* Use at least two replicas for stateless components when local resources permit. Keep the current JSON-backed backend at one replica until order storage is shared safely.
+* Use at least two replicas for stateless components when local resources permit. The frontend has two replicas. Kubernetes uses shared PostgreSQL order storage; the backend currently has one replica by configuration.
 * Add a readiness probe so traffic goes only to ready containers.
 * Add a liveness probe only after confirming the endpoint is safe to call repeatedly.
 * Set `imagePullPolicy` appropriately for local images versus registry images.

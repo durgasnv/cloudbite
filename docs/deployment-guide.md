@@ -1,6 +1,6 @@
 # Local Deployment Guide
 
-This guide describes the local container and Minikube setup. On 2026-10-02, the application and monitoring Deployments were verified Ready in a local Minikube Docker-driver cluster, both health probes were `UP`, and Grafana responded to its health check. This does not verify the Jenkins release stage or make the demo-key authorization safe for public use.
+This guide describes the local container and Minikube setup. Monitoring was verified in a local Minikube Docker-driver cluster on 2026-10-02. On 2026-10-03, the PostgreSQL-backed application was verified through checkout and a backend pod restart. The Jenkins release stage has not been run end to end.
 
 ## Prerequisites
 
@@ -8,9 +8,10 @@ Install and verify:
 
 ```bash
 docker --version
-minikube version
 kubectl version --client
 ```
+
+The `minikube` CLI is needed to create a new cluster. On a host with an existing Minikube Docker container, the deployment script can load images through Docker when the CLI is unavailable.
 
 Prometheus and Grafana can run in Docker Compose or in the CloudBite namespace. The setup commands are in [the monitoring guide](../monitoring/README.md).
 
@@ -24,11 +25,11 @@ Prometheus and Grafana can run in Docker Compose or in the CloudBite namespace. 
 | Backend container port | `5000` by default; configurable with `PORT` |
 | Backend health endpoint | `GET /api/health` |
 | Backend metrics endpoint | Not implemented yet |
-| Database connection variable | None; the application currently reads and writes `server/data/*.json` |
+| Database connection variables | `DATABASE_URL` or `PGHOST` and other `PG*` values; Kubernetes supplies `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `PGPASSWORD` |
 
 The frontend NGINX configuration proxies `/api/` to the `cloudbite-backend` Service. Browser code calls the same-origin `/api` path, so no cluster address appears in the browser.
 
-Orders are currently stored in a JSON file. Do not use more than one backend replica or claim durable orders until the team agrees on database or shared storage integration. The current API also accepts a public demo staff key, so keep this deployment local and use synthetic customer data until Member 1 fixes authorization.
+Orders use PostgreSQL in Kubernetes and a persistent volume claim holds the database files. Create the `cloudbite-secrets` Secret before deploying; see [configuration](configuration.md). The public demo staff key is removed. Use synthetic customer data because production customer accounts and identity checks are not implemented.
 
 ## Try the two containers first
 
@@ -40,7 +41,7 @@ curl -f http://localhost:8080/api/restaurants
 docker compose -f docker/compose.yaml down
 ```
 
-See [the container guide](../docker/README.md) for logs and the current storage limitation.
+See [the container guide](../docker/README.md) for logs and the PostgreSQL Compose overlay.
 
 ## Start the local cluster
 
@@ -62,11 +63,11 @@ minikube image load cloudbite-frontend:local
 
 The image names and tags above match the Kubernetes Deployments. Rebuild and reload both images after source changes.
 
-For a build-specific tag, set `BACKEND_IMAGE`, `FRONTEND_IMAGE`, and `KUBECONFIG`, then run `bash scripts/deploy-minikube.sh`. This renders the scanned tags into the manifests without briefly applying the `:local` placeholders. Set `MINIKUBE_BIN` if the executable is not on `PATH`.
+For a build-specific tag, set `BACKEND_IMAGE`, `FRONTEND_IMAGE`, and `KUBECONFIG`, then run `bash scripts/deploy-minikube.sh`. This renders the scanned tags into the manifests without briefly applying the `:local` placeholders. The script uses `minikube image load` when available, or the running Minikube Docker container otherwise; set `MINIKUBE_CONTAINER` if its name differs.
 
 ## Configure application values
 
-The backend ConfigMap supplies `NODE_ENV=production` and `PORT=5000`. The current application has no database credentials or other required runtime secrets. Add a Kubernetes Secret only after a real sensitive setting is introduced; never commit its value.
+The backend ConfigMap supplies `NODE_ENV=production` and `PORT=5000`. Create the required `cloudbite-secrets` Secret before deployment; it supplies the PostgreSQL password and staff token. The [configuration guide](configuration.md) gives its keys and creation command. Keep its values out of Git.
 
 ## Deploy and verify
 
@@ -75,13 +76,16 @@ Apply the namespace, configuration, and Services before the Deployments. NGINX r
 ```bash
 kubectl apply -f kubernetes/namespace.yaml
 kubectl apply -f kubernetes/configmap.yaml
+kubectl apply -f kubernetes/postgres-service.yaml
+kubectl apply -f kubernetes/postgres-statefulset.yaml
+kubectl rollout status statefulset/cloudbite-postgres -n cloudbite
 kubectl apply -f kubernetes/backend-service.yaml
 kubectl apply -f kubernetes/frontend-service.yaml
 kubectl apply -f kubernetes/backend-deployment.yaml
 kubectl apply -f kubernetes/frontend-deployment.yaml
 kubectl rollout status deployment/cloudbite-backend -n cloudbite
 kubectl rollout status deployment/cloudbite-frontend -n cloudbite
-kubectl get pods,services -n cloudbite
+kubectl get pods,services,pvc -n cloudbite
 ```
 
 After every pod reports `Running` and `Ready`, inspect the services and logs:

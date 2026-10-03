@@ -1,26 +1,28 @@
 # Kubernetes Manifests
 
-This directory contains the first Minikube Deployments and Services for CloudBite. The frontend has two replicas; the backend has one because it still writes orders to a local JSON file.
+This directory contains Minikube Deployments and Services for CloudBite, plus a PostgreSQL StatefulSet with a persistent volume claim. The frontend has two replicas; the backend has one by default.
 
 ## Prerequisites
 
 * A running Minikube cluster.
 * `kubectl` configured to access that cluster.
 * Frontend and backend images built and loaded into Minikube.
-* No application Secret is wired into the current backend Deployment. Do not expose it publicly: the application still accepts a hard-coded demo staff key. The optional Grafana monitoring Deployment needs a local admin-password Secret.
+* Create `cloudbite-secrets` in the `cloudbite` namespace with `postgres-password` and `admin-token` before deployment. See [configuration](../docs/configuration.md). The optional Grafana monitoring Deployment needs its own admin-password Secret.
 
 ## Intended resources
 
 ```text
 namespace.yaml
 configmap.yaml
+postgres-service.yaml
+postgres-statefulset.yaml
 backend-deployment.yaml
 backend-service.yaml
 frontend-deployment.yaml
 frontend-service.yaml
 ```
 
-Database manifests will be added only after the application supports a database. Prometheus, Blackbox Exporter, and Grafana are deployed separately with `kubectl apply -k monitoring/` after the application is Ready; see [the monitoring guide](../monitoring/README.md).
+Prometheus, Blackbox Exporter, and Grafana are deployed separately with `kubectl apply -k monitoring/` after the application is Ready; see [the monitoring guide](../monitoring/README.md).
 
 ## Recommended application order
 
@@ -29,18 +31,21 @@ Apply the namespace first, then configuration and Services, then Deployments. Th
 ```bash
 kubectl apply -f kubernetes/namespace.yaml
 kubectl apply -f kubernetes/configmap.yaml
+kubectl apply -f kubernetes/postgres-service.yaml
+kubectl apply -f kubernetes/postgres-statefulset.yaml
+kubectl rollout status statefulset/cloudbite-postgres -n cloudbite
 kubectl apply -f kubernetes/backend-service.yaml
 kubectl apply -f kubernetes/frontend-service.yaml
 kubectl apply -f kubernetes/backend-deployment.yaml
 kubectl apply -f kubernetes/frontend-deployment.yaml
 ```
 
-For repeat manual deployments, apply the modified files or rerun this sequence. Rebuild and reload local images after source changes, then restart the affected Deployment. Jenkins instead runs `scripts/deploy-minikube.sh`, which loads and applies its exact scanned build tags to avoid deploying the `:local` placeholders.
+For repeat manual deployments, apply the modified files or rerun this sequence. Rebuild and reload local images after source changes, then restart the affected Deployment. Jenkins instead runs `scripts/deploy-minikube.sh`, which loads and applies its exact scanned build tags to avoid deploying the `:local` placeholders. The script uses `minikube image load` when the CLI is present; otherwise it imports images through the running Minikube Docker container. Set `MINIKUBE_CONTAINER` if that container is not named `minikube`.
 
 ## Verification
 
 ```bash
-kubectl get deployments,services,pods -n cloudbite
+kubectl get deployments,statefulsets,pvc,services,pods -n cloudbite
 kubectl rollout status deployment/cloudbite-backend -n cloudbite
 kubectl rollout status deployment/cloudbite-frontend -n cloudbite
 kubectl get endpoints -n cloudbite
@@ -60,14 +65,14 @@ The health check is `http://localhost:18080/health`; the proxied backend check i
 
 * Use the `cloudbite` namespace consistently.
 * Give resources stable, descriptive names and standard labels such as `app.kubernetes.io/name`.
-* Use a Deployment and Service for each workload. The frontend is stateless; the backend is not yet safe to scale because order data is stored in its container.
+* The frontend is stateless; PostgreSQL stores orders outside the backend pods.
 * Define resource requests/limits and readiness probes. Add liveness probes after their endpoint behavior is confirmed.
-* Keep non-sensitive settings in a ConfigMap. Add Secret references only when the application actually needs credentials.
+* Keep non-sensitive settings in a ConfigMap and supply database and staff credentials through the required Secret.
 * Use a local image strategy (`minikube image load`) or a registry strategy consistently. The image tag in each Deployment must match the chosen strategy.
 
 ## Removing CloudBite resources
 
-After the manifests exist, delete only the project namespace and its contents:
+Back up the PostgreSQL volume before removing CloudBite. Deleting the namespace also deletes its volume claim and may delete the underlying order data. To remove only this project's resources:
 
 ```bash
 kubectl delete namespace cloudbite

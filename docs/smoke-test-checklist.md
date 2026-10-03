@@ -2,7 +2,7 @@
 
 This document provides a manual and responsive smoke-test checklist for CloudBite Member 1 frontend and backend changes.
 
-The `Pass` entries below came with the `frontend-api` branch; a full browser run against the Docker or Kubernetes frontend has not been verified here. Staff/demo access is **not** secure while the public `admin123` key remains accepted by the backend. Use only synthetic customer data.
+The `Pass` entries below came with the `frontend-api` branch; a full browser run against the Docker or Kubernetes frontend has not been verified here. Customer tracking now requires a private token. Use only synthetic customer data.
 
 ---
 
@@ -16,7 +16,7 @@ Test suite coverage (`test/frontend.test.js` & `test/server.test.js`):
 - **Search & Filter**: Matching by restaurant name, cuisine, location, and dish/food names (e.g. searching "biryani" finds restaurants serving Biryani).
 - **Cart Validation & Persistence**: Untrusted `localStorage` validation, sanitization of corrupted data, quantity limits (1–50), and calculation of order totals with delivery tiers and platform fee.
 - **Checkout Validation & Authoritative Pricing**: Server-side verification against `menu.json`, rejection of price-tampered requests, rejection of unavailable item IDs, and server-confirmed grand total computation.
-- **Order Visibility & Access Control**: Strict access control preventing anonymous visitors from viewing global order history, order lookup by ID, masking of sensitive customer phone numbers, and protection of status updates (`403 Forbidden` without staff key).
+- **Order Visibility & Access Control**: Anonymous visitors cannot list orders; customer order lookup requires the checkout tracking token; status updates require the configured staff token.
 - **Security & Injection Protection**: Rejection of dangerous URL schemes (`javascript:`, `data:`, `vbscript:`), and safe DOM text handling.
 
 ---
@@ -40,8 +40,8 @@ Verify across viewports using browser DevTools Device Mode:
 | **Cart Items & Quantity Controls** | Mobile & Desktop | Cart items layout stacks into responsive rows. `+`, `−`, and `🗑️` buttons have clear `aria-label` attributes and update total smoothly. | Pass |
 | **Checkout Rejection & Recovery** | All viewports | If an order fails or prices mismatch, cart items remain preserved, submit button is re-enabled, and a clear error banner with "Review & Refresh Cart Prices" is shown. | Pass |
 | **Order Confirmation Dialog** | Mobile & Desktop | Upon successful checkout, modal appears with `role="dialog"` and `aria-modal="true"`. Focus is trapped within modal, displaying the server-confirmed order total. Pressing `Escape` closes the dialog. | Pass |
-| **Order History Privacy** | All viewports | Public visitors only see their own placed orders or can look up an order by ID. Other customers' private names, phone numbers, and addresses are never exposed. | Pass |
-| **Staff Mode Isolation** | All viewports | Status transition simulation controls are hidden from ordinary visitors, but the public demo key currently grants staff access. Remove that bypass and verify real authorization before deployment. | Blocked |
+| **Order History Privacy** | All viewports | Only orders with a tracking token saved in this browser appear. An order ID alone cannot retrieve details; customer responses omit phone and address. | Pending browser check |
+| **Staff Mode Isolation** | All viewports | Status controls are hidden from ordinary visitors; the former demo key is rejected by the API. Confirm the configured staff token works in the browser. | Pending browser check |
 
 ---
 
