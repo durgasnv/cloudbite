@@ -1,0 +1,29 @@
+services:
+  cloudbite-backend:
+    environment:
+      PGHOST: cloudbite-postgres
+      PGPORT: "5432"
+      PGDATABASE: cloudbite
+      PGUSER: cloudbite
+      PGPASSWORD: ${CLOUDBITE_DB_PASSWORD:?Set CLOUDBITE_DB_PASSWORD}
+      ADMIN_TOKEN: ${CLOUDBITE_ADMIN_TOKEN:?Set CLOUDBITE_ADMIN_TOKEN}
+    depends_on:
+      cloudbite-postgres:
+        condition: service_healthy
+
+  cloudbite-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cloudbite
+      POSTGRES_USER: cloudbite
+      POSTGRES_PASSWORD: ${CLOUDBITE_DB_PASSWORD:?Set CLOUDBITE_DB_PASSWORD}
+    volumes:
+      - cloudbite-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cloudbite -d cloudbite"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  cloudbite-postgres-data:

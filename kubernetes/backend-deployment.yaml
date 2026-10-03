@@ -7,7 +7,6 @@ metadata:
     app.kubernetes.io/name: cloudbite-backend
     app.kubernetes.io/part-of: cloudbite
 spec:
-  # JSON-file order storage cannot be shared safely across replicas.
   replicas: 1
   selector:
     matchLabels:
@@ -34,6 +33,25 @@ spec:
           envFrom:
             - configMapRef:
                 name: cloudbite-backend-config
+          env:
+            - name: PGHOST
+              value: cloudbite-postgres
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: cloudbite
+            - name: PGUSER
+              value: cloudbite
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloudbite-secrets
+                  key: postgres-password
+            - name: ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudbite-secrets
+                  key: admin-token
           readinessProbe:
             httpGet:
               path: /api/health
