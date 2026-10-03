@@ -110,21 +110,21 @@ function renderRestaurantBanner(restaurant) {
 
   const ratingSpan = document.createElement('span');
   ratingSpan.className = 'rating-badge';
-  ratingSpan.textContent = `★ ${restaurant.rating || '4.0'}`;
+  ratingSpan.textContent = restaurant.rating == null ? 'No rating' : `★ ${restaurant.rating}`;
 
   const timeSpan = document.createElement('span');
-  timeSpan.textContent = `⏱️ ${restaurant.deliveryTime || '30 mins'}`;
+  if (restaurant.deliveryTime) timeSpan.textContent = `⏱️ ${restaurant.deliveryTime}`;
 
   const locSpan = document.createElement('span');
   locSpan.textContent = `📍 ${restaurant.location || ''}`;
 
   const priceSpan = document.createElement('span');
-  priceSpan.textContent = `💰 ₹${restaurant.priceForTwo || 400} for two`;
+  if (restaurant.priceForTwo != null) priceSpan.textContent = `💰 ₹${restaurant.priceForTwo} for two`;
 
   metaRow.appendChild(ratingSpan);
-  metaRow.appendChild(timeSpan);
+  if (restaurant.deliveryTime) metaRow.appendChild(timeSpan);
   metaRow.appendChild(locSpan);
-  metaRow.appendChild(priceSpan);
+  if (restaurant.priceForTwo != null) metaRow.appendChild(priceSpan);
 
   heroInfo.appendChild(title);
   heroInfo.appendChild(cuisineP);
@@ -220,9 +220,11 @@ function renderMenuItems() {
     details.className = 'food-details';
 
     const vegInd = document.createElement('span');
-    vegInd.className = `veg-indicator ${item.isVeg ? 'veg' : 'non-veg'}`;
-    vegInd.title = item.isVeg ? 'Vegetarian' : 'Non-Vegetarian';
-    vegInd.setAttribute('aria-label', item.isVeg ? 'Vegetarian' : 'Non-Vegetarian');
+    if (typeof item.isVeg === 'boolean') {
+      vegInd.className = `veg-indicator ${item.isVeg ? 'veg' : 'non-veg'}`;
+      vegInd.title = item.isVeg ? 'Vegetarian' : 'Non-Vegetarian';
+      vegInd.setAttribute('aria-label', item.isVeg ? 'Vegetarian' : 'Non-Vegetarian');
+    }
 
     const foodName = document.createElement('h3');
     foodName.className = 'food-name';
@@ -236,7 +238,7 @@ function renderMenuItems() {
     descP.className = 'food-desc';
     descP.textContent = String(item.description || '');
 
-    details.appendChild(vegInd);
+    if (typeof item.isVeg === 'boolean') details.appendChild(vegInd);
     details.appendChild(foodName);
     details.appendChild(priceDiv);
     details.appendChild(descP);
