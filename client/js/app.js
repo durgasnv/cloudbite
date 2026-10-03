@@ -187,43 +187,45 @@ function updateCartBadge() {
    Order Tracking & Access Helpers (Customer vs Admin)
    ========================================================================== */
 
-function getMyOrderIds() {
+function getMyOrderAccess() {
   try {
     if (typeof localStorage === 'undefined') return [];
     const data = localStorage.getItem(MY_ORDERS_KEY);
     if (!data) return [];
     const parsed = JSON.parse(data);
-    return Array.isArray(parsed) ? parsed.map(String) : [];
+    return Array.isArray(parsed) ? parsed.filter(entry =>
+      entry && typeof entry.id === 'string' && typeof entry.token === 'string' &&
+      /^[a-f0-9]{64}$/i.test(entry.token)
+    ) : [];
   } catch (err) {
     return [];
   }
 }
 
-function saveMyOrderId(orderId) {
+function saveMyOrderAccess(orderId, token) {
   try {
-    if (!orderId || typeof localStorage === 'undefined') return;
-    const existing = getMyOrderIds();
+    if (!orderId || !/^[a-f0-9]{64}$/i.test(token) || typeof localStorage === 'undefined') return;
+    const existing = getMyOrderAccess();
     const cleanId = String(orderId).trim().toUpperCase();
-    if (!existing.includes(cleanId)) {
-      existing.push(cleanId);
-      localStorage.setItem(MY_ORDERS_KEY, JSON.stringify(existing));
-    }
+    const updated = existing.filter(entry => entry.id !== cleanId);
+    updated.push({ id: cleanId, token });
+    localStorage.setItem(MY_ORDERS_KEY, JSON.stringify(updated));
   } catch (err) {
-    console.error('Failed to save order ID:', err);
+    console.error('Failed to save order access:', err);
   }
 }
 
 function getAdminToken() {
-  if (typeof localStorage === 'undefined') return '';
-  return localStorage.getItem(ADMIN_TOKEN_KEY) || '';
+  if (typeof sessionStorage === 'undefined') return '';
+  return sessionStorage.getItem(ADMIN_TOKEN_KEY) || '';
 }
 
 function setAdminToken(token) {
-  if (typeof localStorage === 'undefined') return;
+  if (typeof sessionStorage === 'undefined') return;
   if (token) {
-    localStorage.setItem(ADMIN_TOKEN_KEY, String(token).trim());
+    sessionStorage.setItem(ADMIN_TOKEN_KEY, String(token).trim());
   } else {
-    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
   }
 }
 
@@ -328,8 +330,8 @@ if (typeof module !== 'undefined' && module.exports) {
     getCartTotal,
     getCartCount,
     formatPrice,
-    getMyOrderIds,
-    saveMyOrderId,
+    getMyOrderAccess,
+    saveMyOrderAccess,
     getAdminToken,
     setAdminToken,
     showToast

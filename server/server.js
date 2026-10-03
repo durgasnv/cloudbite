@@ -9,6 +9,7 @@ dotenv.config();
 const restaurantRoutes = require('./routes/restaurantRoutes');
 const menuRoutes = require('./routes/menuRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const orderStore = require('./storage/orderStore');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,13 +29,18 @@ const clientPath = path.join(__dirname, '../client');
 app.use(express.static(clientPath));
 
 // API Health Check
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'healthy',
-    app: 'CloudBite Food Delivery API',
-    version: '1.0.0',
-    timestamp: new Date().toISOString()
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    await orderStore.checkStorage();
+    res.status(200).json({
+      status: 'healthy',
+      app: 'CloudBite Food Delivery API',
+      version: '1.0.0',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(503).json({ status: 'unhealthy', message: 'Order storage unavailable' });
+  }
 });
 
 // Mount API Routes

@@ -17,6 +17,10 @@ test('public demo and fallback keys cannot grant staff access', async () => {
       const body = await response.json();
       assert.equal(body.isAdmin, false, 'A public or fallback key must never grant staff access');
       assert.deepEqual(body.data, [], 'A public or fallback key must not list customer orders');
+
+      const queryResponse = await fetch(`http://localhost:${server.address().port}/api/orders?adminKey=${token}`);
+      const queryBody = await queryResponse.json();
+      assert.equal(queryBody.isAdmin, false, 'A query string must not grant staff access');
     }
   } finally {
     await new Promise((resolve) => server.close(resolve));

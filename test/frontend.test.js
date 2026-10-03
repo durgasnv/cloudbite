@@ -1,8 +1,9 @@
 const { test, before, after } = require('node:test');
 const assert = require('node:assert');
+process.env.ADMIN_TOKEN = 'test-only-configured-token';
 const app = require('../server/server');
-const { validateCartItem, sanitizeImageUrl, formatPrice } = require('../client/js/app');
-const { filterRestaurants } = require('../client/js/restaurants');
+const { validateCartItem, sanitizeImageUrl, formatPrice, getMyOrderAccess, saveMyOrderAccess } = require('../client/js/app');
+const { filterRestaurants, getAvailableCities } = require('../client/js/restaurants');
 const { calculateOrderTotals } = require('../client/js/cart');
 const { getStatusClass } = require('../client/js/orders');
 
@@ -91,6 +92,45 @@ test('Search & Filter: searches menu dishes and matches restaurants offering the
   assert.strictEqual(emptyResults.length, 0);
 });
 
+test('City filter combines with dish search and matches only the selected city', () => {
+  const restaurants = [
+    { id: 1, name: 'Spice Garden', cuisine: 'North Indian', location: 'Jubilee Hills, Hyderabad' },
+    { id: 2, name: 'Other Biryani', cuisine: 'North Indian', location: 'Central, Mumbai' },
+    { id: 3, name: 'City Cafe', cuisine: 'Cafe', city: 'Hyderabad', location: 'Jubilee Hills' }
+  ];
+  const menu = [
+    { restaurantId: 1, name: 'Biryani' },
+    { restaurantId: 2, name: 'Biryani' }
+  ];
+  assert.deepStrictEqual(
+    filterRestaurants(restaurants, menu, 'biryani', 'Indian', 'hyderabad').map(r => r.id),
+    [1]
+  );
+  assert.deepStrictEqual(
+    filterRestaurants(restaurants, menu, '', 'all', 'Hyderabad').map(r => r.id),
+    [1, 3]
+  );
+});
+
+test('City choices come from restaurant data and filtering works for every available city', () => {
+  const restaurants = [
+    { id: 1, city: 'Hyderabad', location: 'Jubilee Hills' },
+    { id: 2, city: 'Bangalore', location: 'Indiranagar' },
+    { id: 3, location: 'Bandra West, Mumbai' },
+    { id: 4, city: 'mumbai', location: 'Andheri' },
+    { id: 5, city: 'Pune', location: 'Kothrud' }
+  ];
+  const cities = getAvailableCities(restaurants);
+  assert.deepStrictEqual(cities.map(city => city.toLowerCase()), ['bangalore', 'hyderabad', 'mumbai', 'pune']);
+  for (const city of cities) {
+    const results = filterRestaurants(restaurants, [], '', 'all', city);
+    assert.ok(results.length > 0);
+    assert.ok(results.every(restaurant =>
+      (restaurant.city || restaurant.location.split(',').pop().trim()).toLowerCase() === city.toLowerCase()
+    ));
+  }
+});
+
 test('API GET /api/restaurants: backend endpoint supports food search', async () => {
   const res = await fetch(`${baseUrl}/api/restaurants?search=biryani`);
   assert.strictEqual(res.status, 200);
@@ -99,6 +139,23 @@ test('API GET /api/restaurants: backend endpoint supports food search', async ()
   assert.ok(body.data.length > 0);
   assert.strictEqual(body.data[0].name, 'Spice Garden');
   assert.ok(Array.isArray(body.data[0].matchedDishes));
+});
+
+test('API GET /api/restaurants filters by exact city with search', async () => {
+  const res = await fetch(`${baseUrl}/api/restaurants?city=hyderabad&search=biryani`);
+  assert.strictEqual(res.status, 200);
+  const body = await res.json();
+  assert.deepStrictEqual(body.data.map(r => r.name), ['Spice Garden']);
+
+  const missing = await fetch(`${baseUrl}/api/restaurants?city=Hyder`);
+  assert.deepStrictEqual((await missing.json()).data, []);
+
+  for (const [city, expectedCount] of [['Bangalore', 2], ['Mumbai', 1], ['New Delhi', 1]]) {
+    const response = await fetch(`${baseUrl}/api/restaurants?city=${encodeURIComponent(city)}`);
+    const data = (await response.json()).data;
+    assert.strictEqual(data.length, expectedCount);
+    assert.ok(data.every(restaurant => restaurant.location.endsWith(city)));
+  }
 });
 
 /* ==========================================================================
@@ -246,7 +303,7 @@ test('Access Control: GET /api/orders without credentials or orderIds blocks lis
   assert.deepStrictEqual(body.data, []);
 });
 
-test('Access Control: Customer querying orderIds receives only permitted orders with masked phone', async () => {
+test('Access Control: order details require the private tracking token', async () => {
   // First place an order
   const orderRes = await fetch(`${baseUrl}/api/orders`, {
     method: 'POST',
@@ -261,16 +318,51 @@ test('Access Control: Customer querying orderIds receives only permitted orders 
   });
   const orderJson = await orderRes.json();
   const createdId = orderJson.data.id;
+  const accessToken = orderJson.orderAccessToken;
+  assert.match(accessToken, /^[a-f0-9]{64}$/);
 
-  // Now query as customer with orderIds
+  // A sequential order ID alone must not expose customer details.
   const custRes = await fetch(`${baseUrl}/api/orders?orderIds=${createdId}`);
   assert.strictEqual(custRes.status, 200);
   const custBody = await custRes.json();
-  assert.strictEqual(custBody.success, true);
-  assert.strictEqual(custBody.count, 1);
-  assert.strictEqual(custBody.data[0].id, createdId);
-  // Sensitive phone number must be masked for non-admin
-  assert.strictEqual(custBody.data[0].customerPhone, '987****210');
+  assert.deepStrictEqual(custBody.data, []);
+
+  const withoutToken = await fetch(`${baseUrl}/api/orders/${createdId}`);
+  assert.strictEqual(withoutToken.status, 403);
+
+  const wrongToken = await fetch(`${baseUrl}/api/orders/${createdId}`, {
+    headers: { 'x-order-token': '0'.repeat(64) }
+  });
+  assert.strictEqual(wrongToken.status, 403);
+
+  const withToken = await fetch(`${baseUrl}/api/orders/${createdId}`, {
+    headers: { 'x-order-token': accessToken }
+  });
+  assert.strictEqual(withToken.status, 200);
+  const order = (await withToken.json()).data;
+  assert.strictEqual(order.id, createdId);
+  assert.strictEqual(order.customerAddress, undefined);
+  assert.strictEqual(order.customerPhone, undefined);
+  assert.strictEqual(order.accessTokenHash, undefined);
+});
+
+test('Customer tracking stores only orders with a valid private token', () => {
+  const values = new Map();
+  global.localStorage = {
+    getItem: key => values.get(key) || null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: key => values.delete(key)
+  };
+  try {
+    values.set('cloudbite_my_orders', JSON.stringify(['ORD1025']));
+    assert.deepStrictEqual(getMyOrderAccess(), []);
+    saveMyOrderAccess('ORDTEST', 'a'.repeat(64));
+    assert.deepStrictEqual(getMyOrderAccess(), [{ id: 'ORDTEST', token: 'a'.repeat(64) }]);
+    saveMyOrderAccess('ORDINVALID', 'short');
+    assert.strictEqual(getMyOrderAccess().length, 1);
+  } finally {
+    delete global.localStorage;
+  }
 });
 
 test('Access Control: PATCH /api/orders/:id/status rejected with 403 Forbidden without admin credentials', async () => {
@@ -305,7 +397,7 @@ test('Access Control: PATCH /api/orders/:id/status succeeds with x-admin-token',
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      'x-admin-token': 'admin123'
+      'x-admin-token': 'test-only-configured-token'
     },
     body: JSON.stringify({ status: 'PREPARING' })
   });

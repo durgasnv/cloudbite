@@ -2,33 +2,41 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
+const crypto = require('crypto');
+const orderStore = require('../storage/orderStore');
 
-const ordersFilePath = path.join(__dirname, '../data/orders.json');
 const menuFilePath = path.join(__dirname, '../data/menu.json');
 
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'admin-secret-key';
+const ADMIN_TOKEN = ['admin123', 'admin-secret-key'].includes(process.env.ADMIN_TOKEN)
+  ? undefined : process.env.ADMIN_TOKEN;
+
+function tokenMatches(provided, expected) {
+  if (typeof provided !== 'string' || typeof expected !== 'string' || !expected) return false;
+  const left = Buffer.from(provided);
+  const right = Buffer.from(expected);
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
+function publicOrder(order) {
+  const { accessTokenHash, ...details } = order;
+  return details;
+}
+
+function customerOrder(order) {
+  const { customerPhone, customerAddress, ...details } = publicOrder(order);
+  return details;
+}
 
 // Helper to verify admin credentials
 function isAdmin(req) {
   const tokenHeader = req.headers['x-admin-token'];
   const authHeader = req.headers['authorization'];
-  const queryKey = req.query.adminKey;
-
-  if (tokenHeader && (tokenHeader === ADMIN_TOKEN || tokenHeader === 'admin123')) return true;
-  if (queryKey && (queryKey === ADMIN_TOKEN || queryKey === 'admin123')) return true;
+  if (tokenMatches(tokenHeader, ADMIN_TOKEN)) return true;
   if (authHeader) {
     const parts = authHeader.split(' ');
-    if (parts.length === 2 && (parts[1] === ADMIN_TOKEN || parts[1] === 'admin123')) return true;
+    if (parts.length === 2 && parts[0] === 'Bearer' && tokenMatches(parts[1], ADMIN_TOKEN)) return true;
   }
   return false;
-}
-
-// Helper to mask sensitive customer phone
-function maskPhone(phone) {
-  if (!phone || phone === 'Not provided' || phone === 'Not specified') return phone;
-  const digits = String(phone).trim();
-  if (digits.length <= 4) return '****';
-  return digits.slice(0, 3) + '****' + digits.slice(-3);
 }
 
 // Helper to read JSON files safely with auto-recovery
@@ -46,21 +54,11 @@ async function readJsonFile(filePath) {
   }
 }
 
-// Helper to write JSON files safely
-async function writeJsonFile(filePath, data) {
-  try {
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
-  } catch (err) {
-    console.error(`Error writing file to ${filePath}:`, err);
-    throw new Error('Failed to save data');
-  }
-}
-
 // GET /api/orders - Get orders with access control (FR-08)
-// Admins see all orders; ordinary customers see only their permitted order IDs
+// Only authenticated staff can list orders.
 router.get('/', async (req, res, next) => {
   try {
-    const orders = await readJsonFile(ordersFilePath);
+    const orders = await orderStore.listOrders();
     const sortedOrders = [...orders].reverse();
 
     if (isAdmin(req)) {
@@ -68,42 +66,16 @@ router.get('/', async (req, res, next) => {
         success: true,
         count: sortedOrders.length,
         isAdmin: true,
-        data: sortedOrders
+        data: sortedOrders.map(publicOrder)
       });
     }
 
-    // Customer mode: check if orderIds query param is provided
-    const orderIdsParam = req.query.orderIds;
-    if (orderIdsParam) {
-      const requestedIds = String(orderIdsParam)
-        .split(',')
-        .map(id => id.trim().toUpperCase())
-        .filter(Boolean);
-
-      const userOrders = sortedOrders.filter(o =>
-        requestedIds.includes(String(o.id).toUpperCase())
-      );
-
-      const sanitizedOrders = userOrders.map(order => ({
-        ...order,
-        customerPhone: maskPhone(order.customerPhone)
-      }));
-
-      return res.status(200).json({
-        success: true,
-        count: sanitizedOrders.length,
-        isAdmin: false,
-        data: sanitizedOrders
-      });
-    }
-
-    // If visitor provides neither admin credentials nor order IDs, restrict listing
     return res.status(200).json({
       success: true,
       count: 0,
       isAdmin: false,
       data: [],
-      message: 'Access restricted: Provide orderIds to view your orders, or authenticate as admin.'
+      message: 'Staff authorization is required to list orders.'
     });
   } catch (error) {
     next(error);
@@ -114,8 +86,7 @@ router.get('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const orderId = String(req.params.id).trim().toUpperCase();
-    const orders = await readJsonFile(ordersFilePath);
-    const order = orders.find(o => String(o.id).toUpperCase() === orderId);
+    const order = await orderStore.findOrder(orderId);
 
     if (!order) {
       return res.status(404).json({
@@ -124,15 +95,19 @@ router.get('/:id', async (req, res, next) => {
       });
     }
 
-    const payload = isAdmin(req) ? order : {
-      ...order,
-      customerPhone: maskPhone(order.customerPhone)
-    };
+    const staff = isAdmin(req);
+    if (!staff) {
+      const token = req.headers['x-order-token'];
+      const tokenHash = typeof token === 'string' ? crypto.createHash('sha256').update(token).digest('hex') : '';
+      if (!tokenMatches(tokenHash, order.accessTokenHash)) {
+        return res.status(403).json({ success: false, message: 'Order access token required.' });
+      }
+    }
 
     res.status(200).json({
       success: true,
-      isAdmin: isAdmin(req),
-      data: payload
+      isAdmin: staff,
+      data: staff ? publicOrder(order) : customerOrder(order)
     });
   } catch (error) {
     next(error);
@@ -242,21 +217,12 @@ router.post('/', async (req, res, next) => {
       }
     }
 
-    const orders = await readJsonFile(ordersFilePath);
+    const orderId = `ORD${crypto.randomBytes(12).toString('hex').toUpperCase()}`;
 
-    // Generate sequential Order ID: ORD1025, ORD1026...
-    let maxNum = 1024;
-    for (const o of orders) {
-      const match = String(o.id).match(/^ORD(\d+)$/i);
-      if (match) {
-        const num = parseInt(match[1], 10);
-        if (num > maxNum) maxNum = num;
-      }
-    }
-    const orderId = `ORD${maxNum + 1}`;
-
+    const orderAccessToken = crypto.randomBytes(32).toString('hex');
     const newOrder = {
       id: orderId,
+      accessTokenHash: crypto.createHash('sha256').update(orderAccessToken).digest('hex'),
       customerName: customerName.trim(),
       customerPhone: customerPhone ? String(customerPhone).trim() : 'Not provided',
       customerAddress: customerAddress ? String(customerAddress).trim() : 'Standard Delivery',
@@ -273,13 +239,13 @@ router.post('/', async (req, res, next) => {
       })
     };
 
-    orders.push(newOrder);
-    await writeJsonFile(ordersFilePath, orders);
+    await orderStore.createOrder(newOrder);
 
     res.status(201).json({
       success: true,
       message: 'Order placed successfully!',
-      data: newOrder
+      data: customerOrder(newOrder),
+      orderAccessToken
     });
   } catch (error) {
     next(error);
@@ -308,23 +274,18 @@ router.patch('/:id/status', async (req, res, next) => {
       });
     }
 
-    const orders = await readJsonFile(ordersFilePath);
-    const orderIndex = orders.findIndex(o => String(o.id).toUpperCase() === orderId);
-
-    if (orderIndex === -1) {
+    const updatedOrder = await orderStore.updateOrderStatus(orderId, status.toUpperCase());
+    if (!updatedOrder) {
       return res.status(404).json({
         success: false,
         message: `Order with ID ${orderId} not found.`
       });
     }
 
-    orders[orderIndex].status = status.toUpperCase();
-    await writeJsonFile(ordersFilePath, orders);
-
     res.status(200).json({
       success: true,
       message: `Order status updated to ${status.toUpperCase()}`,
-      data: orders[orderIndex]
+      data: publicOrder(updatedOrder)
     });
   } catch (error) {
     next(error);

@@ -314,9 +314,9 @@ async function handlePlaceOrder(e) {
       return;
     }
 
-    // Success! Save customer's order ID in personal history, then clear cart
-    if (result.data && result.data.id) {
-      saveMyOrderId(result.data.id);
+    // Save the private tracking token with the order ID in this browser.
+    if (result.data && result.data.id && result.orderAccessToken) {
+      saveMyOrderAccess(result.data.id, result.orderAccessToken);
     }
     clearCart();
 

@@ -66,12 +66,12 @@ function updateAdminModeBanner() {
 
 function promptAdminMode() {
   if (isAdminMode) {
-    showToast('Staff Mode is already active', 'info');
+    showToast('Staff mode is already active', 'info');
     return;
   }
 
   const enteredKey = window.prompt(
-    'Enter Staff / Demo Admin Key to enable full order access and status simulation:\n(Default Demo Key: admin123)'
+    'Enter the configured staff access token:'
   );
 
   if (enteredKey === null) return; // User cancelled
@@ -85,7 +85,7 @@ function promptAdminMode() {
   setAdminToken(cleanKey);
   isAdminMode = true;
   updateAdminModeBanner();
-  showToast('Staff Mode enabled: Access granted to all orders and status controls', 'success');
+  showToast('Checking staff access', 'info');
   fetchOrders();
 }
 
@@ -138,6 +138,17 @@ async function fetchOrders() {
     // 1. If looking up a specific Order ID
     if (currentLookupId) {
       url = `${API_BASE_URL}/orders/${encodeURIComponent(currentLookupId)}`;
+      const savedOrder = getMyOrderAccess().find(entry => entry.id === currentLookupId);
+      if (!isAdminMode && !savedOrder) {
+        if (loader) loader.style.display = 'none';
+        if (emptyState) {
+          if (emptyTitle) emptyTitle.textContent = 'Order access unavailable';
+          if (emptyDesc) emptyDesc.textContent = 'Only orders placed in this browser can be tracked here.';
+          emptyState.style.display = 'block';
+        }
+        return;
+      }
+      if (savedOrder && !isAdminMode) headers['x-order-token'] = savedOrder.token;
       const response = await fetch(url, { headers });
 
       if (loader) loader.style.display = 'none';
@@ -151,6 +162,14 @@ async function fetchOrders() {
         return;
       }
 
+      if (response.status === 403) {
+        if (emptyState) {
+          if (emptyTitle) emptyTitle.textContent = 'Order access unavailable';
+          if (emptyDesc) emptyDesc.textContent = 'This browser no longer has access to that order.';
+          emptyState.style.display = 'block';
+        }
+        return;
+      }
       if (!response.ok) {
         throw new Error(`Server returned error status ${response.status}`);
       }
@@ -179,8 +198,12 @@ async function fetchOrders() {
       }
 
       const result = await response.json();
-      if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+      if (result.isAdmin && result.success && Array.isArray(result.data) && result.data.length > 0) {
         renderOrdersList(result.data, true);
+      } else if (!result.isAdmin) {
+        showToast('Invalid staff token. Exiting staff mode.', 'error');
+        exitAdminMode();
+        return;
       } else {
         if (emptyState) {
           if (emptyTitle) emptyTitle.textContent = 'No orders found';
@@ -192,29 +215,27 @@ async function fetchOrders() {
     }
 
     // 3. Customer Mode: Fetch only permitted personal orders
-    const myOrderIds = getMyOrderIds();
-    if (myOrderIds.length === 0) {
+    const myOrders = getMyOrderAccess();
+    if (myOrders.length === 0) {
       if (loader) loader.style.display = 'none';
       if (emptyState) {
         if (emptyTitle) emptyTitle.textContent = 'No orders placed yet';
-        if (emptyDesc) emptyDesc.textContent = "You haven't placed any food orders on CloudBite yet. Start exploring our delicious menus or use the lookup above if you have an Order ID!";
+        if (emptyDesc) emptyDesc.textContent = "Orders placed in this browser will appear here. Start exploring our menus!";
         emptyState.style.display = 'block';
       }
       return;
     }
 
-    // Request only the customer's permitted order IDs
-    url = `${API_BASE_URL}/orders?orderIds=${encodeURIComponent(myOrderIds.join(','))}`;
-    const response = await fetch(url);
+    const responses = await Promise.all(myOrders.map(async entry => {
+      const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(entry.id)}`, {
+        headers: { 'x-order-token': entry.token }
+      });
+      return response.ok ? (await response.json()).data : null;
+    }));
     if (loader) loader.style.display = 'none';
-
-    if (!response.ok) {
-      throw new Error(`Server returned status ${response.status}`);
-    }
-
-    const result = await response.json();
-    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-      renderOrdersList(result.data, false);
+    const orders = responses.filter(Boolean).reverse();
+    if (orders.length > 0) {
+      renderOrdersList(orders, false);
     } else {
       if (emptyState) {
         if (emptyTitle) emptyTitle.textContent = 'No past orders found';
