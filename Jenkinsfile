@@ -29,6 +29,21 @@ pipeline {
             steps { sh 'npm test' }
         }
 
+        stage('Deployment Configuration') {
+            steps {
+                sh '''
+                    bash -n scripts/deploy-minikube.sh
+                    CLOUDBITE_DB_PASSWORD=config-check-only \\
+                    CLOUDBITE_ADMIN_TOKEN=config-check-only \\
+                    GRAFANA_ADMIN_PASSWORD=config-check-only \\
+                      docker compose -f docker/compose.yaml \\
+                        -f docker/compose.database.yaml \\
+                        -f docker/compose.monitoring.yaml config --quiet
+                    kubectl kustomize monitoring >/dev/null
+                '''
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 script {

@@ -1397,6 +1397,8 @@ button, input, select, textarea {
   padding: 2.5rem 2rem;
   max-width: 480px;
   width: 100%;
+  max-height: calc(100dvh - 3rem);
+  overflow-y: auto;
   text-align: center;
   box-shadow: var(--shadow-xl);
   transform: scale(0.95);

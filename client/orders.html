@@ -83,6 +83,12 @@
         </div>
       </div>
 
+      <div style="margin-bottom: 1.5rem;">
+        <label for="orderLookupToken">Private tracking code (if this order is not saved in your browser)</label>
+        <input id="orderLookupToken" type="password" autocomplete="off" spellcheck="false" aria-describedby="orderLookupTokenHelp" style="display: block; width: 100%; box-sizing: border-box; padding: 0.5rem 0.75rem;" />
+        <p id="orderLookupTokenHelp">Paste the code from your order confirmation, enter the order ID above, and select Track.</p>
+      </div>
+
       <!-- Loading State -->
       <div id="ordersLoader" class="loader-container">
         <div class="spinner"></div>

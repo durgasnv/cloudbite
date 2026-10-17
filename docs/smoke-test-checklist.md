@@ -41,6 +41,9 @@ Verify across viewports using browser DevTools Device Mode:
 | **Checkout Rejection & Recovery** | All viewports | If an order fails or prices mismatch, cart items remain preserved, submit button is re-enabled, and a clear error banner with "Review & Refresh Cart Prices" is shown. | Pass |
 | **Order Confirmation Dialog** | Mobile & Desktop | Upon successful checkout, modal appears with `role="dialog"` and `aria-modal="true"`. Focus is trapped within modal, displaying the server-confirmed order total. Pressing `Escape` closes the dialog. | Pass |
 | **Order History Privacy** | All viewports | Only orders with a tracking token saved in this browser appear. An order ID alone cannot retrieve details; customer responses omit phone and address. | Pending browser check |
+| **Price Precision** | All viewports | A dish priced at ₹803.57 keeps its paise in the menu, cart, and order confirmation. | Pending browser check |
+| **Tracking Recovery** | All viewports | Simulate browser storage being full or blocked after adding a cart item. Checkout still shows a confirmed order, its ID, and a selectable private tracking code. Paste the ID and code on the Orders page to retrieve it. The code must appear only in the request header, never in the URL. | Pending browser check |
+| **Completed Checkout** | All viewports | A successful checkout clears the cart display. If cart cleanup fails, checkout still shows success and prevents submitting that confirmed order again. | Pending browser check |
 | **Staff Mode Isolation** | All viewports | Status controls are hidden from ordinary visitors; the former demo key is rejected by the API. Confirm the configured staff token works in the browser. | Pending browser check |
 
 ---

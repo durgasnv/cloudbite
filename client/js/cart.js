@@ -4,6 +4,7 @@
  */
 
 let lastActiveElement = null;
+let checkoutCompleted = false;
 
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
@@ -251,6 +252,7 @@ async function refreshCartPrices() {
 // Handle Checkout Submission (POST /api/orders - FR-07)
 async function handlePlaceOrder(e) {
   e.preventDefault();
+  if (checkoutCompleted) return;
   clearCheckoutError();
 
   const cart = getCart();
@@ -314,34 +316,46 @@ async function handlePlaceOrder(e) {
       return;
     }
 
-    // Save the private tracking token with the order ID in this browser.
-    if (result.data && result.data.id && result.orderAccessToken) {
-      saveMyOrderAccess(result.data.id, result.orderAccessToken);
+    // A confirmed order must not be submitted again if browser storage fails.
+    checkoutCompleted = true;
+    const accessSaved = saveMyOrderAccess(result.data.id, result.orderAccessToken);
+    showOrderSuccessModal(result.data, result.orderAccessToken, accessSaved);
+    try {
+      clearCart();
+      renderCart();
+    } catch (storageError) {
+      console.error('Could not clear the completed cart:', storageError);
     }
-    clearCart();
-
-    // Show confirmation modal displaying server-authoritative order details
-    showOrderSuccessModal(result.data);
 
   } catch (error) {
     console.error('Error placing order:', error);
     showCheckoutError('Unable to connect to order service. Please check your connection and try again.', false);
     showToast('Connection error while placing order', 'error');
   } finally {
-    // Re-enable submit button in all cases so the customer is never trapped
+    // Failed requests can be retried; confirmed orders cannot be submitted twice.
     if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Place Order →';
+      submitBtn.disabled = checkoutCompleted;
+      submitBtn.textContent = checkoutCompleted ? 'Order Placed ✓' : 'Place Order →';
     }
   }
 }
 
-function showOrderSuccessModal(order) {
+function showOrderSuccessModal(order, accessToken, accessSaved) {
   lastActiveElement = document.activeElement;
   const modal = document.getElementById('orderSuccessModal');
   const orderIdSpan = document.getElementById('modalOrderId');
   const orderStatusSpan = document.getElementById('modalOrderStatus');
   const orderTotalSpan = document.getElementById('modalOrderTotal');
+  const recovery = document.getElementById('orderTrackingRecovery');
+  const recoveryMessage = document.getElementById('orderTrackingMessage');
+  const tokenField = document.getElementById('orderTrackingToken');
+  if (recovery) recovery.hidden = !accessToken;
+  if (tokenField) tokenField.value = accessToken || '';
+  if (recoveryMessage) {
+    recoveryMessage.textContent = accessSaved
+      ? 'Tracking access is saved in this browser. Keep your order ID and private tracking code if you want to track it elsewhere.'
+      : 'Your order is confirmed, but tracking access could not be saved in this browser. Copy your order ID and private tracking code before leaving. Paste both on the Orders page to track it.';
+  }
 
   if (orderIdSpan) orderIdSpan.textContent = order.id || 'N/A';
   if (orderStatusSpan) {

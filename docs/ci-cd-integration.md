@@ -7,6 +7,7 @@ The `Jenkinsfile` runs the CloudBite checks in order and stops on a failed comma
 | Stage | Gate |
 | --- | --- |
 | Checkout, install, syntax check, tests | `checkout scm`, `npm ci`, `npm run check`, `npm test` |
+| Deployment configuration | Check deployment shell syntax, validate the combined Compose configuration, and render monitoring resources with Kustomize before building images. |
 | SonarQube analysis and quality gate | The scanner submits an analysis; Jenkins waits for the server's result and fails on a rejected gate or timeout. |
 | Secret and dependency scans | Gitleaks scans Git history; `npm audit` fails on high or critical findings. |
 | Build and scan both images | Docker builds unique `BUILD_NUMBER` tags; Trivy fails on high or critical image vulnerabilities. |

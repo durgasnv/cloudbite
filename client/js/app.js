@@ -204,14 +204,16 @@ function getMyOrderAccess() {
 
 function saveMyOrderAccess(orderId, token) {
   try {
-    if (!orderId || !/^[a-f0-9]{64}$/i.test(token) || typeof localStorage === 'undefined') return;
+    if (!orderId || !/^[a-f0-9]{64}$/i.test(token) || typeof localStorage === 'undefined') return false;
     const existing = getMyOrderAccess();
     const cleanId = String(orderId).trim().toUpperCase();
     const updated = existing.filter(entry => entry.id !== cleanId);
     updated.push({ id: cleanId, token });
     localStorage.setItem(MY_ORDERS_KEY, JSON.stringify(updated));
+    return getMyOrderAccess().some(entry => entry.id === cleanId && entry.token === token);
   } catch (err) {
     console.error('Failed to save order access:', err);
+    return false;
   }
 }
 
@@ -270,8 +272,8 @@ function showToast(message, type = 'success') {
 
 function formatPrice(amount) {
   const num = Number(amount);
-  if (isNaN(num)) return '₹0';
-  return `₹${num.toFixed(0)}`;
+  if (!Number.isFinite(num)) return '₹0';
+  return `₹${num.toFixed(2).replace(/\.00$/, '')}`;
 }
 
 /* ==========================================================================

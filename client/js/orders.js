@@ -45,6 +45,8 @@ function initOrdersPage() {
     clearLookupBtn.addEventListener('click', () => {
       currentLookupId = null;
       if (lookupInput) lookupInput.value = '';
+      const tokenInput = document.getElementById('orderLookupToken');
+      if (tokenInput) tokenInput.value = '';
       clearLookupBtn.style.display = 'none';
       fetchOrders();
     });
@@ -110,7 +112,7 @@ function handleOrderLookup() {
 
   currentLookupId = rawId;
   if (clearBtn) clearBtn.style.display = 'inline-block';
-  fetchOrders();
+  return fetchOrders();
 }
 
 async function fetchOrders() {
@@ -139,16 +141,19 @@ async function fetchOrders() {
     if (currentLookupId) {
       url = `${API_BASE_URL}/orders/${encodeURIComponent(currentLookupId)}`;
       const savedOrder = getMyOrderAccess().find(entry => entry.id === currentLookupId);
-      if (!isAdminMode && !savedOrder) {
+      const tokenInput = document.getElementById('orderLookupToken');
+      const enteredToken = tokenInput ? tokenInput.value.trim() : '';
+      const trackingToken = enteredToken || (savedOrder && savedOrder.token);
+      if (!isAdminMode && !/^[a-f0-9]{64}$/i.test(trackingToken || '')) {
         if (loader) loader.style.display = 'none';
         if (emptyState) {
           if (emptyTitle) emptyTitle.textContent = 'Order access unavailable';
-          if (emptyDesc) emptyDesc.textContent = 'Only orders placed in this browser can be tracked here.';
+          if (emptyDesc) emptyDesc.textContent = 'Paste the private tracking code from your order confirmation to track this order.';
           emptyState.style.display = 'block';
         }
         return;
       }
-      if (savedOrder && !isAdminMode) headers['x-order-token'] = savedOrder.token;
+      if (!isAdminMode) headers['x-order-token'] = trackingToken;
       const response = await fetch(url, { headers });
 
       if (loader) loader.style.display = 'none';
@@ -176,6 +181,7 @@ async function fetchOrders() {
 
       const resJson = await response.json();
       if (resJson.success && resJson.data) {
+        if (!isAdminMode && enteredToken) saveMyOrderAccess(currentLookupId, enteredToken);
         renderOrdersList([resJson.data], resJson.isAdmin || isAdminMode);
       } else {
         throw new Error(resJson.message || 'Order could not be retrieved.');
