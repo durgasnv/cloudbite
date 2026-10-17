@@ -22,6 +22,10 @@ The backend reads `PORT` (default `5000`), `ADMIN_TOKEN`, and PostgreSQL connect
 | `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` | Backend | Password is sensitive | PostgreSQL connection when `DATABASE_URL` is unset. |
 | `NODE_ENV` | Runtime | No | Node.js environment. |
 
+JSON order storage serializes writes within one backend process and replaces the file atomically. Run only one backend process against a JSON file; use PostgreSQL for multiple processes or replicas. Empty, corrupt, malformed, or duplicate order records fail with `503` and are never silently replaced. Restore a valid backup before retrying. A missing orders file initializes on the first checkout if its directory is writable.
+
+`GET /api/health` verifies JSON readability and creates and removes a temporary file to check directory write access. PostgreSQL health checks verify the schema and connection. Storage failure returns `503`. Checkout requires positive integer item IDs and quantities (at most 50 per entry); prices and totals must be finite, non-negative numbers when supplied. Catalog query parameters accept one string per filter, and invalid values return `400`. CORS permits `X-Order-Token` and `X-Admin-Token` for frontends on another origin.
+
 ## Local development
 
 1. Use `npm ci` and `npm start` for JSON-backed local development, or set `DATABASE_URL` to use PostgreSQL.

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
+const { validateQuery, positiveInteger, badRequest } = require('../utils/validation');
 
 const menuFilePath = path.join(__dirname, '../data/menu.json');
 
@@ -23,6 +24,9 @@ async function readJsonFile(filePath) {
 router.get('/', async (req, res, next) => {
   try {
     const { category, restaurantId, search } = req.query;
+    validateQuery(req.query, ['category', 'restaurantId', 'search']);
+    const parsedRestaurantId = restaurantId === undefined ? undefined : positiveInteger(restaurantId);
+    if (parsedRestaurantId === null) throw badRequest('Invalid restaurantId. Must be a positive integer.');
     let menuItems = await readJsonFile(menuFilePath);
 
     if (category) {
@@ -31,11 +35,8 @@ router.get('/', async (req, res, next) => {
       );
     }
 
-    if (restaurantId) {
-      const parsedId = parseInt(restaurantId, 10);
-      if (!isNaN(parsedId)) {
-        menuItems = menuItems.filter(item => item.restaurantId === parsedId);
-      }
+    if (parsedRestaurantId !== undefined) {
+      menuItems = menuItems.filter(item => item.restaurantId === parsedRestaurantId);
     }
 
     if (search) {
@@ -60,8 +61,8 @@ router.get('/', async (req, res, next) => {
 // GET /api/menu/:id - Get a specific menu item
 router.get('/:id', async (req, res, next) => {
   try {
-    const itemId = parseInt(req.params.id, 10);
-    if (isNaN(itemId)) {
+    const itemId = positiveInteger(req.params.id);
+    if (itemId === null) {
       return res.status(400).json({
         success: false,
         message: 'Invalid menu item ID. Must be a valid number.'

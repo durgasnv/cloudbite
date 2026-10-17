@@ -6,3 +6,4 @@ node_modules/
 zomato_dataset.csv
 dataset/*.csv
 .system_generated/
+server/data/.cloudbite-orders-*.tmp

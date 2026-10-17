@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
+const { validateQuery, positiveInteger } = require('../utils/validation');
 
 const restaurantsFilePath = path.join(__dirname, '../data/restaurants.json');
 const menuFilePath = path.join(__dirname, '../data/menu.json');
@@ -28,6 +29,7 @@ function restaurantCity(restaurant) {
 router.get('/', async (req, res, next) => {
   try {
     const { search, cuisine, city } = req.query;
+    validateQuery(req.query, ['search', 'cuisine', 'city']);
     let restaurants = await readJsonFile(restaurantsFilePath);
     let menuItems = [];
 
@@ -87,8 +89,8 @@ router.get('/', async (req, res, next) => {
 // GET /api/restaurants/:id - Get a specific restaurant (FR-02)
 router.get('/:id', async (req, res, next) => {
   try {
-    const restaurantId = parseInt(req.params.id, 10);
-    if (isNaN(restaurantId)) {
+    const restaurantId = positiveInteger(req.params.id);
+    if (restaurantId === null) {
       return res.status(400).json({
         success: false,
         message: 'Invalid restaurant ID. Must be a valid number.'
@@ -117,8 +119,8 @@ router.get('/:id', async (req, res, next) => {
 // GET /api/restaurants/:id/menu - Get menu items for a specific restaurant (FR-03)
 router.get('/:id/menu', async (req, res, next) => {
   try {
-    const restaurantId = parseInt(req.params.id, 10);
-    if (isNaN(restaurantId)) {
+    const restaurantId = positiveInteger(req.params.id);
+    if (restaurantId === null) {
       return res.status(400).json({
         success: false,
         message: 'Invalid restaurant ID. Must be a valid number.'

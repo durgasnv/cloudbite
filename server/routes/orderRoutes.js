@@ -4,6 +4,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
 const orderStore = require('../storage/orderStore');
+const { badRequest, isRecord, positiveInteger, nonnegativeNumber } = require('../utils/validation');
 
 const menuFilePath = path.join(__dirname, '../data/menu.json');
 
@@ -39,18 +40,19 @@ function isAdmin(req) {
   return false;
 }
 
-// Helper to read JSON files safely with auto-recovery
+// Catalog failures must not masquerade as an empty menu.
 async function readJsonFile(filePath) {
   try {
     const data = await fs.readFile(filePath, 'utf8');
     const trimmed = (data || '').trim();
-    if (!trimmed) return [];
     const parsed = JSON.parse(trimmed);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) throw new Error('Invalid menu catalog');
+    return parsed;
   } catch (err) {
-    if (err.code === 'ENOENT') return [];
     console.error(`Error reading/parsing file from ${filePath}:`, err.message);
-    return [];
+    const error = new Error('Menu catalog unavailable');
+    error.status = 503;
+    throw error;
   }
 }
 
@@ -58,10 +60,9 @@ async function readJsonFile(filePath) {
 // Only authenticated staff can list orders.
 router.get('/', async (req, res, next) => {
   try {
-    const orders = await orderStore.listOrders();
-    const sortedOrders = [...orders].reverse();
-
     if (isAdmin(req)) {
+      const orders = await orderStore.listOrders();
+      const sortedOrders = [...orders].reverse();
       return res.status(200).json({
         success: true,
         count: sortedOrders.length,
@@ -117,6 +118,7 @@ router.get('/:id', async (req, res, next) => {
 // POST /api/orders - Simulated Order Placement with Authoritative Pricing (FR-07)
 router.post('/', async (req, res, next) => {
   try {
+    if (!isRecord(req.body)) throw badRequest('Validation failed: request body must be an object.');
     const { customerName, customerPhone, customerAddress, items, totalAmount } = req.body;
 
     // Validate customer name
@@ -125,6 +127,12 @@ router.post('/', async (req, res, next) => {
         success: false,
         message: 'Validation failed: customerName is required and must be a valid string.'
       });
+    }
+
+    for (const [field, value] of Object.entries({ customerPhone, customerAddress })) {
+      if (value !== undefined && typeof value !== 'string') {
+        throw badRequest(`Validation failed: ${field} must be a string.`);
+      }
     }
 
     // Validate cart items
@@ -141,8 +149,9 @@ router.post('/', async (req, res, next) => {
     const verifiedItems = [];
 
     for (const item of items) {
-      const quantity = parseInt(item.quantity, 10);
-      if (isNaN(quantity) || quantity <= 0) {
+      if (!isRecord(item)) throw badRequest('Validation failed: each item must be an object.');
+      const quantity = positiveInteger(item.quantity);
+      if (quantity === null) {
         return res.status(400).json({
           success: false,
           message: 'Validation failed: each item must contain a positive integer quantity.'
@@ -156,7 +165,8 @@ router.post('/', async (req, res, next) => {
       }
 
       // Look up authoritative menu item
-      const itemId = Number(item.id);
+      const itemId = positiveInteger(item.id);
+      if (itemId === null) throw badRequest('Validation failed: item ID must be a positive integer.');
       const menuItem = menuItems.find(m => m.id === itemId);
 
       if (!menuItem) {
@@ -176,9 +186,16 @@ router.post('/', async (req, res, next) => {
       }
 
       const authoritativePrice = Number(menuItem.price);
+      if (!Number.isFinite(authoritativePrice) || authoritativePrice < 0) {
+        const error = new Error('Menu catalog unavailable');
+        error.status = 503;
+        throw error;
+      }
 
       // Check if client provided price mismatch
-      if (item.price !== undefined && Math.abs(Number(item.price) - authoritativePrice) > 0.01) {
+      const submittedPrice = item.price === undefined ? undefined : nonnegativeNumber(item.price);
+      if (submittedPrice === null) throw badRequest('Validation failed: item price must be a finite non-negative number.');
+      if (submittedPrice !== undefined && Math.abs(submittedPrice - authoritativePrice) > 0.01) {
         return res.status(400).json({
           success: false,
           priceChanged: true,
@@ -206,8 +223,8 @@ router.post('/', async (req, res, next) => {
     const authoritativeTotal = authoritativeSubtotal + deliveryFee + platformFee;
 
     if (totalAmount !== undefined) {
-      const numericClientTotal = Number(totalAmount);
-      if (isNaN(numericClientTotal) || Math.abs(numericClientTotal - authoritativeTotal) > 0.01) {
+      const numericClientTotal = nonnegativeNumber(totalAmount);
+      if (numericClientTotal === null || Math.abs(numericClientTotal - authoritativeTotal) > 0.01) {
         return res.status(400).json({
           success: false,
           priceChanged: true,
@@ -264,10 +281,11 @@ router.patch('/:id/status', async (req, res, next) => {
     }
 
     const orderId = String(req.params.id).trim().toUpperCase();
+    if (!isRecord(req.body)) throw badRequest('Validation failed: request body must be an object.');
     const { status } = req.body;
     const validStatuses = ['CONFIRMED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED'];
 
-    if (!status || !validStatuses.includes(status.toUpperCase())) {
+    if (typeof status !== 'string' || !validStatuses.includes(status.toUpperCase())) {
       return res.status(400).json({
         success: false,
         message: `Invalid status. Must be one of: ${validStatuses.join(', ')}.`

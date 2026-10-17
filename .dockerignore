@@ -26,3 +26,4 @@ Thumbs.db
 
 # Mutable runtime data must never be baked into a release image.
 server/data/orders.json
+**/.cloudbite-orders-*.tmp
