@@ -5,6 +5,9 @@ const { createLocalOrderStore } = require('./localOrderStore');
 const ordersFilePath = process.env.ORDER_FILE_PATH || path.join(__dirname, '../data/orders.json');
 const localStore = createLocalOrderStore(ordersFilePath);
 const databaseConfigured = Boolean(process.env.DATABASE_URL || process.env.PGHOST);
+if (process.env.NODE_ENV === 'production' && !databaseConfigured) {
+  throw new Error('Production database configuration is required (DATABASE_URL or PGHOST).');
+}
 const timeout = Number(process.env.DB_TIMEOUT_MS || 3000);
 if (!Number.isInteger(timeout) || timeout < 100 || timeout > 30000) {
   throw new Error('DB_TIMEOUT_MS must be an integer between 100 and 30000.');

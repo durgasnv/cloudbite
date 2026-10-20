@@ -1,6 +1,7 @@
 services:
   cloudbite-backend:
     environment:
+      NODE_ENV: production
       PGHOST: cloudbite-postgres
       PGPORT: "5432"
       PGDATABASE: cloudbite
