@@ -5,9 +5,16 @@ const { createLocalOrderStore } = require('./localOrderStore');
 const ordersFilePath = process.env.ORDER_FILE_PATH || path.join(__dirname, '../data/orders.json');
 const localStore = createLocalOrderStore(ordersFilePath);
 const databaseConfigured = Boolean(process.env.DATABASE_URL || process.env.PGHOST);
-const pool = databaseConfigured ? new Pool(process.env.DATABASE_URL
-  ? { connectionString: process.env.DATABASE_URL }
-  : {}) : null;
+const timeout = Number(process.env.DB_TIMEOUT_MS || 3000);
+if (!Number.isInteger(timeout) || timeout < 100 || timeout > 30000) {
+  throw new Error('DB_TIMEOUT_MS must be an integer between 100 and 30000.');
+}
+const pool = databaseConfigured ? new Pool({
+  ...(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : {}),
+  connectionTimeoutMillis: timeout, query_timeout: timeout, statement_timeout: timeout
+}) : null;
+// Idle connections can fail outside a request; pg otherwise emits an unhandled error.
+if (pool) pool.on('error', () => console.error('Idle order database connection failed'));
 let schemaReady;
 
 async function ensureSchema() {
@@ -67,4 +74,15 @@ async function checkStorage() {
   await pool.query('SELECT 1');
 }
 
-module.exports = { listOrders, findOrder, createOrder, updateOrderStatus, checkStorage };
+// Keep storage outages bounded and do not expose database internals to clients.
+const safe = operation => async (...args) => {
+  try { return await operation(...args); }
+  catch (cause) {
+    if (cause.status === 409 || cause.status === 503) throw cause;
+    const error = new Error('Order storage unavailable', { cause });
+    error.status = 503;
+    throw error;
+  }
+};
+module.exports = Object.fromEntries(Object.entries({ listOrders, findOrder, createOrder, updateOrderStatus, checkStorage })
+  .map(([name, operation]) => [name, safe(operation)]));
