@@ -173,6 +173,7 @@ router.post('/', async (req, res, next) => {
     const menuItems = await readJsonFile(menuFilePath);
     let authoritativeSubtotal = 0;
     const verifiedItems = [];
+    const quantitiesById = new Map();
 
     for (const item of items) {
       if (!isRecord(item)) throw badRequest('Validation failed: each item must be an object.');
@@ -193,6 +194,9 @@ router.post('/', async (req, res, next) => {
       // Look up authoritative menu item
       const itemId = positiveInteger(item.id);
       if (itemId === null) throw badRequest('Validation failed: item ID must be a positive integer.');
+      const aggregateQuantity = (quantitiesById.get(itemId) || 0) + quantity;
+      if (aggregateQuantity > 50) throw badRequest('Validation failed: maximum total quantity per item is 50.');
+      quantitiesById.set(itemId, aggregateQuantity);
       const menuItem = menuItems.find(m => m.id === itemId);
 
       if (!menuItem) {
