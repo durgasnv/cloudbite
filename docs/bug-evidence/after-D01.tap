@@ -1,0 +1,334 @@
+TAP version 13
+# Subtest: concurrent checkouts and status updates retain every accepted order with unique IDs
+ok 1 - concurrent checkouts and status updates retain every accepted order with unique IDs
+  ---
+  duration_ms: 823.105918
+  type: 'test'
+  ...
+# Subtest: readers see valid JSON throughout concurrent writes
+ok 2 - readers see valid JSON throughout concurrent writes
+  ---
+  duration_ms: 65.199332
+  type: 'test'
+  ...
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Unhandled Server Error: Order storage unavailable
+# Subtest: corrupt, empty, malformed, and duplicate records fail closed without overwriting history
+ok 3 - corrupt, empty, malformed, and duplicate records fail closed without overwriting history
+  ---
+  duration_ms: 215.096881
+  type: 'test'
+  ...
+# Unhandled Server Error: Order storage unavailable
+# Subtest: new JSON installations initialize safely and missing storage directories are unhealthy
+ok 4 - new JSON installations initialize safely and missing storage directories are unhealthy
+  ---
+  duration_ms: 56.813392
+  type: 'test'
+  ...
+# Subtest: failed atomic replacement retains history, cleans temporary files, and allows retry
+ok 5 - failed atomic replacement retains history, cleans temporary files, and allows retry
+  ---
+  duration_ms: 12.177979
+  type: 'test'
+  ...
+# Unhandled Server Error: Invalid search. Supply a single text value.
+# Unhandled Server Error: Invalid search. Supply a single text value.
+# Unhandled Server Error: Invalid category. Supply a single text value.
+# Unhandled Server Error: Invalid category. Supply a single text value.
+# Unhandled Server Error: Invalid restaurantId. Supply a single text value.
+# Unhandled Server Error: Invalid restaurantId. Supply a single text value.
+# Unhandled Server Error: Invalid search. Supply a single text value.
+# Unhandled Server Error: Invalid search. Supply a single text value.
+# Unhandled Server Error: Invalid cuisine. Supply a single text value.
+# Unhandled Server Error: Invalid cuisine. Supply a single text value.
+# Unhandled Server Error: Invalid city. Supply a single text value.
+# Unhandled Server Error: Invalid city. Supply a single text value.
+# Subtest: repeated and structured catalog query parameters return clear 400 responses
+ok 6 - repeated and structured catalog query parameters return clear 400 responses
+  ---
+  duration_ms: 51.082462
+  type: 'test'
+  ...
+# Unhandled Server Error: Invalid restaurantId. Must be a positive integer.
+# Unhandled Server Error: Invalid restaurantId. Must be a positive integer.
+# Unhandled Server Error: Invalid restaurantId. Must be a positive integer.
+# Unhandled Server Error: Invalid restaurantId. Must be a positive integer.
+# Unhandled Server Error: Invalid restaurantId. Must be a positive integer.
+# Unhandled Server Error: Invalid restaurantId. Must be a positive integer.
+# Unhandled Server Error: Invalid restaurantId. Must be a positive integer.
+# Subtest: catalog identifiers reject partial numbers, fractions, zero, and unsafe integers
+ok 7 - catalog identifiers reject partial numbers, fractions, zero, and unsafe integers
+  ---
+  duration_ms: 139.700482
+  type: 'test'
+  ...
+# Unhandled Server Error: Unexpected token 'n', "null" is not valid JSON
+# Unhandled Server Error: Validation failed: request body must be an object.
+# Unhandled Server Error: Unexpected token '"', ""invalid"" is not valid JSON
+# Unhandled Server Error: Validation failed: each item must be an object.
+# Unhandled Server Error: Validation failed: each item must be an object.
+# Unhandled Server Error: Validation failed: each item must be an object.
+# Unhandled Server Error: Validation failed: customerPhone must be a string.
+# Unhandled Server Error: Validation failed: customerAddress must be a string.
+# Subtest: malformed checkout bodies and non-object cart entries return 400
+ok 8 - malformed checkout bodies and non-object cart entries return 400
+  ---
+  duration_ms: 86.771847
+  type: 'test'
+  ...
+# Unhandled Server Error: Validation failed: item ID must be a positive integer.
+# Unhandled Server Error: Validation failed: item ID must be a positive integer.
+# Unhandled Server Error: Validation failed: item ID must be a positive integer.
+# Unhandled Server Error: Validation failed: item ID must be a positive integer.
+# Unhandled Server Error: Validation failed: item ID must be a positive integer.
+# Unhandled Server Error: Validation failed: item ID must be a positive integer.
+# Subtest: checkout validates integer quantities and IDs without coercing arrays or booleans
+ok 9 - checkout validates integer quantities and IDs without coercing arrays or booleans
+  ---
+  duration_ms: 306.007087
+  type: 'test'
+  ...
+# Unhandled Server Error: Validation failed: item price must be a finite non-negative number.
+# Unhandled Server Error: Validation failed: item price must be a finite non-negative number.
+# Unhandled Server Error: Validation failed: item price must be a finite non-negative number.
+# Unhandled Server Error: Validation failed: item price must be a finite non-negative number.
+# Unhandled Server Error: Validation failed: item price must be a finite non-negative number.
+# Unhandled Server Error: Validation failed: item price must be a finite non-negative number.
+# Unhandled Server Error: Validation failed: item price must be a finite non-negative number.
+# Unhandled Server Error: Validation failed: item price must be a finite non-negative number.
+# Unhandled Server Error: Validation failed: item price must be a finite non-negative number.
+# Unhandled Server Error: Validation failed: item price must be a finite non-negative number.
+# Subtest: nonfinite and malformed prices and totals are rejected while catalog pricing remains authoritative
+ok 10 - nonfinite and malformed prices and totals are rejected while catalog pricing remains authoritative
+  ---
+  duration_ms: 312.740849
+  type: 'test'
+  ...
+# Unhandled Server Error: Validation failed: request body must be an object.
+# Subtest: invalid status values return 400 for staff while unauthenticated updates stay forbidden
+ok 11 - invalid status values return 400 for staff while unauthenticated updates stay forbidden
+  ---
+  duration_ms: 20.780913
+  type: 'test'
+  ...
+# Subtest: customer and staff tokens remain required and hashes never appear in API responses
+ok 12 - customer and staff tokens remain required and hashes never appear in API responses
+  ---
+  duration_ms: 41.135225
+  type: 'test'
+  ...
+# Subtest: cross-origin preflight permits customer and staff token headers
+ok 13 - cross-origin preflight permits customer and staff token headers
+  ---
+  duration_ms: 1.723931
+  type: 'test'
+  ...
+# Subtest: prices preserve paise in dishes, cart totals, and confirmation
+ok 14 - prices preserve paise in dishes, cart totals, and confirmation
+  ---
+  duration_ms: 1.057939
+  type: 'test'
+  ...
+# Subtest: saving tracking access explicitly fails without storage
+ok 15 - saving tracking access explicitly fails without storage
+  ---
+  duration_ms: 0.280209
+  type: 'test'
+  ...
+# Subtest: confirmed checkout remains recoverable after quota storage failure
+ok 16 - confirmed checkout remains recoverable after quota storage failure
+  ---
+  duration_ms: 42.761429
+  type: 'test'
+  ...
+# Subtest: confirmed checkout remains recoverable after silent-write storage failure
+ok 17 - confirmed checkout remains recoverable after silent-write storage failure
+  ---
+  duration_ms: 31.514106
+  type: 'test'
+  ...
+# Subtest: confirmed checkout remains recoverable after remove storage failure
+ok 18 - confirmed checkout remains recoverable after remove storage failure
+  ---
+  duration_ms: 26.934096
+  type: 'test'
+  ...
+# Subtest: failed checkout preserves the cart and permits retry
+ok 19 - failed checkout preserves the cart and permits retry
+  ---
+  duration_ms: 28.82359
+  type: 'test'
+  ...
+# Subtest: manual tracking sends the private token in a header and renders customer text safely
+ok 20 - manual tracking sends the private token in a header and renders customer text safely
+  ---
+  duration_ms: 32.380565
+  type: 'test'
+  ...
+# Subtest: malformed price refresh preserves cart and error until valid menu recovery
+ok 21 - malformed price refresh preserves cart and error until valid menu recovery
+  ---
+  duration_ms: 31.502384
+  type: 'test'
+  ...
+# Subtest: uncertain checkout reuses the persisted attempt key after page reload
+ok 22 - uncertain checkout reuses the persisted attempt key after page reload
+  ---
+  duration_ms: 53.912735
+  type: 'test'
+  ...
+# Unhandled Server Error: Validation failed: maximum total quantity per item is 50.
+# Subtest: D01: duplicate item rows cannot bypass the aggregate 50-unit limit
+ok 23 - D01: duplicate item rows cannot bypass the aggregate 50-unit limit
+  ---
+  duration_ms: 566.037357
+  type: 'test'
+  ...
+# Subtest: Search & Filter: matches restaurant by restaurant name, cuisine, and location
+ok 24 - Search & Filter: matches restaurant by restaurant name, cuisine, and location
+  ---
+  duration_ms: 6.159795
+  type: 'test'
+  ...
+# Subtest: Search & Filter: searches menu dishes and matches restaurants offering them
+ok 25 - Search & Filter: searches menu dishes and matches restaurants offering them
+  ---
+  duration_ms: 0.721544
+  type: 'test'
+  ...
+# Subtest: City filter combines with dish search and matches only the selected city
+ok 26 - City filter combines with dish search and matches only the selected city
+  ---
+  duration_ms: 0.725557
+  type: 'test'
+  ...
+# Subtest: City choices come from restaurant data and filtering works for every available city
+ok 27 - City choices come from restaurant data and filtering works for every available city
+  ---
+  duration_ms: 9.262063
+  type: 'test'
+  ...
+# Subtest: API GET /api/restaurants: backend endpoint supports food search
+ok 28 - API GET /api/restaurants: backend endpoint supports food search
+  ---
+  duration_ms: 83.274066
+  type: 'test'
+  ...
+# Subtest: API GET /api/restaurants filters by exact city with search
+ok 29 - API GET /api/restaurants filters by exact city with search
+  ---
+  duration_ms: 104.980205
+  type: 'test'
+  ...
+# Subtest: Homepage serves a mixed-source restaurant preview
+ok 30 - Homepage serves a mixed-source restaurant preview
+  ---
+  duration_ms: 26.57715
+  type: 'test'
+  ...
+# Subtest: Cart Validation: validateCartItem sanitizes and validates cart entries
+ok 31 - Cart Validation: validateCartItem sanitizes and validates cart entries
+  ---
+  duration_ms: 0.470049
+  type: 'test'
+  ...
+# Subtest: Cart Totals: calculateOrderTotals enforces delivery fee tiers and platform fee
+ok 32 - Cart Totals: calculateOrderTotals enforces delivery fee tiers and platform fee
+  ---
+  duration_ms: 0.369015
+  type: 'test'
+  ...
+# Subtest: Checkout: Server rejects tampered item prices with clear priceChanged error
+ok 33 - Checkout: Server rejects tampered item prices with clear priceChanged error
+  ---
+  duration_ms: 471.32148
+  type: 'test'
+  ...
+# Subtest: Checkout: Server rejects non-existent or unavailable item IDs
+ok 34 - Checkout: Server rejects non-existent or unavailable item IDs
+  ---
+  duration_ms: 19.327368
+  type: 'test'
+  ...
+# Subtest: Checkout: Server authoritatively confirms valid orders and computes verified total
+ok 35 - Checkout: Server authoritatively confirms valid orders and computes verified total
+  ---
+  duration_ms: 30.812006
+  type: 'test'
+  ...
+# Subtest: Access Control: GET /api/orders without credentials or orderIds blocks listing all customer details
+ok 36 - Access Control: GET /api/orders without credentials or orderIds blocks listing all customer details
+  ---
+  duration_ms: 4.970741
+  type: 'test'
+  ...
+# Subtest: Access Control: order details require the private tracking token
+ok 37 - Access Control: order details require the private tracking token
+  ---
+  duration_ms: 40.645629
+  type: 'test'
+  ...
+# Subtest: Customer tracking stores only orders with a valid private token
+ok 38 - Customer tracking stores only orders with a valid private token
+  ---
+  duration_ms: 0.493657
+  type: 'test'
+  ...
+# Subtest: Access Control: PATCH /api/orders/:id/status rejected with 403 Forbidden without admin credentials
+ok 39 - Access Control: PATCH /api/orders/:id/status rejected with 403 Forbidden without admin credentials
+  ---
+  duration_ms: 3.03953
+  type: 'test'
+  ...
+# Subtest: Access Control: PATCH /api/orders/:id/status succeeds with x-admin-token
+ok 40 - Access Control: PATCH /api/orders/:id/status succeeds with x-admin-token
+  ---
+  duration_ms: 29.660383
+  type: 'test'
+  ...
+# Subtest: Security: sanitizeImageUrl disallows dangerous URI schemes
+ok 41 - Security: sanitizeImageUrl disallows dangerous URI schemes
+  ---
+  duration_ms: 0.281708
+  type: 'test'
+  ...
+# Subtest: Security: getStatusClass safely handles untrusted or unknown status input
+ok 42 - Security: getStatusClass safely handles untrusted or unknown status input
+  ---
+  duration_ms: 0.097262
+  type: 'test'
+  ...
+# Subtest: public demo and fallback keys cannot grant staff access
+ok 43 - public demo and fallback keys cannot grant staff access
+  ---
+  duration_ms: 73.395244
+  type: 'test'
+  ...
+# Subtest: GET /api/restaurants returns the list of restaurants
+ok 44 - GET /api/restaurants returns the list of restaurants
+  ---
+  duration_ms: 59.095573
+  type: 'test'
+  ...
+1..44
+# tests 44
+# suites 0
+# pass 44
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10496.406855

@@ -2,6 +2,8 @@
 
 See [system requirements](requirements.md) and [project tracking](docs/project-tracking.md) for planned dataset/GPS work and open findings. The [chaos report](CHAOS_REPORT.md) records isolated failure/recovery experiments; run them with `npm run test:chaos`.
 
+The [debugging audit](BUG_REPORT.md) documents ten reproduced bugs, focused fixes, and regression evidence on `debug/reproducible-bug-audit`.
+
 For the complete explanation of the application, Jenkins pipeline, Docker/Minikube/Kubernetes deployment, monitoring, access URLs, and feature flows, see [How CloudBite runs](docs/how-cloudbite-runs.md).
 
 CloudBite is a simplified cloud-native food delivery application that demonstrates a secure DevSecOps software delivery lifecycle. Users can browse restaurants and menus, manage a cart, and simulate placing an order.
