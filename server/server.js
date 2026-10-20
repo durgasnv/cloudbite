@@ -28,6 +28,9 @@ app.use(express.urlencoded({ extended: true }));
 const clientPath = path.join(__dirname, '../client');
 app.use(express.static(clientPath));
 
+// Liveness is independent of database readiness.
+app.get('/api/live', (req, res) => res.status(200).json({ status: 'alive' }));
+
 // API Health Check
 app.get('/api/health', async (req, res) => {
   try {
