@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs').promises;
+const { readCatalog: readJsonFile } = require('../utils/catalog');
 const path = require('path');
 const crypto = require('crypto');
 const orderStore = require('../storage/orderStore');
@@ -47,20 +47,6 @@ function isAdmin(req) {
 }
 
 // Catalog failures must not masquerade as an empty menu.
-async function readJsonFile(filePath) {
-  try {
-    const data = await fs.readFile(filePath, 'utf8');
-    const trimmed = (data || '').trim();
-    const parsed = JSON.parse(trimmed);
-    if (!Array.isArray(parsed)) throw new Error('Invalid menu catalog');
-    return parsed;
-  } catch (err) {
-    console.error(`Error reading/parsing file from ${filePath}:`, err.message);
-    const error = new Error('Menu catalog unavailable');
-    error.status = 503;
-    throw error;
-  }
-}
 
 // GET /api/orders - Get orders with access control (FR-08)
 // Only authenticated staff can list orders.

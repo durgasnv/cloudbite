@@ -145,3 +145,21 @@ test('D08: frontend dish-search failure is visible instead of partial success', 
   assert.match(ui.all(ui.node('restaurantsGrid')).map(node => node.textContent).join(' '), /unavailable|unable/i);
   assert.doesNotMatch(ui.node('restaurantCountLabel').textContent, /^Showing \d+ restaurants$/);
 });
+
+test('D09: malformed catalog structures fail closed on listing, filtering, details, and checkout', async () => {
+  for (const raw of ['{}', 'null', '[null]', '[{"id":1}]']) {
+    overrides.set(path.resolve(__dirname, '../server/data/menu.json'), raw);
+    for (const endpoint of ['/api/menu', '/api/menu?search=rice', '/api/menu/1', '/api/restaurants/1/menu']) {
+      const result = await request(endpoint);
+      assert.equal(result.status, 503, `${endpoint} with ${raw}`);
+      assert.equal(result.body.success, false);
+    }
+    assert.equal((await request('/api/orders', order([{ id: 1, quantity: 1 }]))).status, 503);
+    assert.deepEqual(await store.listOrders(), []);
+  }
+  overrides.clear();
+  overrides.set(path.resolve(__dirname, '../server/data/restaurants.json'), '[{"id":1}]');
+  assert.equal((await request('/api/restaurants')).status, 503);
+  overrides.clear();
+  assert.equal((await request('/api/menu')).status, 200);
+});

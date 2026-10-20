@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs').promises;
+const { readCatalog: readJsonFile } = require('../utils/catalog');
 const path = require('path');
 const { validateQuery, positiveInteger } = require('../utils/validation');
 
@@ -8,18 +8,6 @@ const restaurantsFilePath = path.join(__dirname, '../data/restaurants.json');
 const menuFilePath = path.join(__dirname, '../data/menu.json');
 
 // Helper to read JSON files safely
-async function readJsonFile(filePath) {
-  try {
-    const data = await fs.readFile(filePath, 'utf8');
-    const trimmed = (data || '').trim();
-    if (!trimmed) return [];
-    return JSON.parse(trimmed);
-  } catch (err) {
-    if (err.code === 'ENOENT') return [];
-    console.error(`Error reading file from ${filePath}:`, err.message);
-    throw new Error('Failed to read data file');
-  }
-}
 
 function restaurantCity(restaurant) {
   return String(restaurant.city || String(restaurant.location || '').split(',').pop()).trim();
@@ -59,8 +47,8 @@ router.get('/', async (req, res, next) => {
         const matchingDishes = menuItems.filter(
           item => item.restaurantId === restaurant.id &&
             (item.name.toLowerCase().includes(query) ||
-             (item.description && item.description.toLowerCase().includes(query)) ||
-             (item.category && item.category.toLowerCase().includes(query)))
+             (item.description && (item.description || '').toLowerCase().includes(query)) ||
+             (item.category && (item.category || '').toLowerCase().includes(query)))
         );
 
         if (matchingDishes.length > 0) {
