@@ -11,6 +11,9 @@ const menuFilePath = path.join(__dirname, '../data/menu.json');
 const ADMIN_TOKEN = ['admin123', 'admin-secret-key'].includes(process.env.ADMIN_TOKEN)
   ? undefined : process.env.ADMIN_TOKEN;
 
+const adminExpiry = process.env.ADMIN_TOKEN_EXPIRES_AT ? Date.parse(process.env.ADMIN_TOKEN_EXPIRES_AT) : Infinity;
+if (Number.isNaN(adminExpiry)) throw new Error('ADMIN_TOKEN_EXPIRES_AT must be an ISO date.');
+
 function tokenMatches(provided, expected) {
   if (typeof provided !== 'string' || typeof expected !== 'string' || !expected) return false;
   const left = Buffer.from(provided);
@@ -30,6 +33,7 @@ function customerOrder(order) {
 
 // Helper to verify admin credentials
 function isAdmin(req) {
+  if (Date.now() >= adminExpiry) return false;
   const tokenHeader = req.headers['x-admin-token'];
   const authHeader = req.headers['authorization'];
   if (tokenMatches(tokenHeader, ADMIN_TOKEN)) return true;
