@@ -54,3 +54,15 @@ test('D01: duplicate item rows cannot bypass the aggregate 50-unit limit', async
   assert.deepEqual(await store.listOrders(), []);
   assert.equal((await request('/api/orders', order([{ id: item.id, quantity: 25 }, { id: item.id, quantity: 25 }]))).status, 201);
 });
+
+test('D02: checkout rejects different cities and preserves same-city multi-outlet orders', async () => {
+  const first = menu[0];
+  const outlet = restaurants.find(r => r.id === first.restaurantId);
+  const otherCity = menu.find(item => restaurants.find(r => r.id === item.restaurantId).city !== outlet.city);
+  assert.ok(otherCity);
+  assert.equal((await request('/api/orders', order([first, otherCity].map(item => ({ id: item.id, quantity: 1 }))))).status, 400);
+  assert.deepEqual(await store.listOrders(), []);
+  const sameCity = menu.find(item => item.restaurantId !== first.restaurantId && restaurants.find(r => r.id === item.restaurantId).city === outlet.city);
+  assert.ok(sameCity);
+  assert.equal((await request('/api/orders', order([first, sameCity].map(item => ({ id: item.id, quantity: 1 }))))).status, 201);
+});

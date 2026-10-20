@@ -8,6 +8,7 @@ const { verifyReplay } = require('../storage/orderErrors');
 const { badRequest, isRecord, positiveInteger, nonnegativeNumber } = require('../utils/validation');
 
 const menuFilePath = path.join(__dirname, '../data/menu.json');
+const restaurantsFilePath = path.join(__dirname, '../data/restaurants.json');
 
 const ADMIN_TOKEN = ['admin123', 'admin-secret-key'].includes(process.env.ADMIN_TOKEN)
   ? undefined : process.env.ADMIN_TOKEN;
@@ -171,6 +172,9 @@ router.post('/', async (req, res, next) => {
 
     // Authoritative pricing check against menu.json
     const menuItems = await readJsonFile(menuFilePath);
+    const restaurants = await readJsonFile(restaurantsFilePath);
+    const restaurantsById = new Map(restaurants.map(restaurant => [restaurant.id, restaurant]));
+    const deliveryCities = new Set();
     let authoritativeSubtotal = 0;
     const verifiedItems = [];
     const quantitiesById = new Map();
@@ -206,6 +210,16 @@ router.post('/', async (req, res, next) => {
           unavailableItemId: item.id
         });
       }
+
+      const restaurant = restaurantsById.get(menuItem.restaurantId);
+      const city = restaurant && String(restaurant.city || String(restaurant.location || '').split(',').pop()).trim().toLocaleLowerCase();
+      if (!city) {
+        const error = new Error('Restaurant location unavailable');
+        error.status = 503;
+        throw error;
+      }
+      deliveryCities.add(city);
+      if (deliveryCities.size > 1) throw badRequest('Items from different cities cannot share one delivery.');
 
       if (menuItem.isAvailable === false) {
         return res.status(400).json({
