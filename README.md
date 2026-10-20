@@ -1,6 +1,6 @@
 # CloudBite
 
-See [system requirements](requirements.md) and [project tracking](docs/project-tracking.md) for planned dataset/GPS work and open findings.
+See [system requirements](requirements.md) and [project tracking](docs/project-tracking.md) for planned dataset/GPS work and open findings. The [chaos report](CHAOS_REPORT.md) records isolated failure/recovery experiments; run them with `npm run test:chaos`.
 
 For the complete explanation of the application, Jenkins pipeline, Docker/Minikube/Kubernetes deployment, monitoring, access URLs, and feature flows, see [How CloudBite runs](docs/how-cloudbite-runs.md).
 

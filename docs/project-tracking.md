@@ -1,6 +1,6 @@
 # CloudBite project tracking
 
-Updated: 2026-10-20. Target behavior is defined in [system requirements](../requirements.md). This tracker records requested work and user-reported findings; the supplied reproductions have not been independently rerun for this documentation update. All entries are open, with owners unassigned and no completion evidence recorded. Existing workspace changes do not establish resolution.
+Updated: 2026-10-20. Target behavior is defined in [system requirements](../requirements.md). This tracker records requested work and user-reported findings; the supplied reproductions have not been independently rerun for this documentation update. Entries were opened with owners unassigned and no completion evidence at intake; subsequent verification is recorded below. Existing workspace changes do not establish resolution.
 
 ## Requested feature work
 
@@ -41,3 +41,8 @@ The observations and reproduction counts below are supplied findings, not fresh 
 ## Verification and completion
 
 For each entry, record the owner, implementation reference, validation command or manual steps, result, and verification date before changing its status to resolved. Documentation acceptance criteria are not implementation evidence. Prioritize the four High findings before the Medium and Low findings; coordinate the dataset refactor with stable IDs and safe publication, and GPS filtering with unknown-city handling and cross-city checkout validation.
+
+
+## Chaos verification follow-up — 2026-10-20
+
+The [chaos report](../CHAOS_REPORT.md) records local implementation and recovery evidence. BUG-03 is fixed for browser/keyed checkout retries, including disconnects and process restarts; legacy requests without a key can still duplicate orders. BUG-18 has separate process liveness and storage readiness, verified during an isolated PostgreSQL outage; the updated Kubernetes probe has not been exercised in a deployed cluster. BUG-19 now retains refresh errors and preserves the cart on invalid menu data; the recovery regression covers a later successful refresh. These findings remain open here for the stated legacy/deployment checks or full original reproduction closure; other entries are unchanged.

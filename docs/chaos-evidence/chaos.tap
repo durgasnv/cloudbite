@@ -1,0 +1,89 @@
+
+> cloudbite@1.0.0 test:chaos
+> node --test --test-concurrency=1 test/chaos.test.js
+
+TAP version 13
+# Subtest: chaos 1: real 5, 15, and 30 second API delays and bounded client recovery
+ok 1 - chaos 1: real 5, 15, and 30 second API delays and bounded client recovery
+  ---
+  duration_ms: 43009.322398
+  type: 'test'
+  ...
+# Actual loopback response delay 5000ms: 5119ms
+# Actual loopback response delay 15000ms: 16027ms
+# Actual loopback response delay 30000ms: 31041ms
+# Subtest: chaos 2: socket disconnect after commit retains one order on retry
+ok 2 - chaos 2: socket disconnect after commit retains one order on retry
+  ---
+  duration_ms: 15410.826748
+  type: 'test'
+  ...
+# Subtest: chaos 3: refused and hanging PostgreSQL connections fail bounded, liveness survives
+ok 3 - chaos 3: refused and hanging PostgreSQL connections fail bounded, liveness survives
+  ---
+  duration_ms: 29834.168659
+  type: 'test'
+  ...
+# Subtest: chaos 4: twenty duplicate requests persist one order; changed payload conflicts
+ok 4 - chaos 4: twenty duplicate requests persist one order; changed payload conflicts
+  ---
+  duration_ms: 15587.897088
+  type: 'test'
+  ...
+# Subtest: chaos 5: twenty rapid submit events and offline retry use one in-flight request and stable key
+ok 5 - chaos 5: twenty rapid submit events and offline retry use one in-flight request and stable key
+  ---
+  duration_ms: 27.863207
+  type: 'test'
+  ...
+# Subtest: chaos 6: expired staff credentials cannot read or mutate; fresh credentials recover
+ok 6 - chaos 6: expired staff credentials cannot read or mutate; fresh credentials recover
+  ---
+  duration_ms: 42800.694867
+  type: 'test'
+  ...
+# Subtest: chaos 7: malformed API JSON and success shapes preserve cart, then recover
+ok 7 - chaos 7: malformed API JSON and success shapes preserve cart, then recover
+  ---
+  duration_ms: 151.512332
+  type: 'test'
+  ...
+# Subtest: chaos 8: missing production database fails startup; missing staff token fails closed
+ok 8 - chaos 8: missing production database fails startup; missing staff token fails closed
+  ---
+  duration_ms: 33583.1031
+  type: 'test'
+  ...
+# Subtest: chaos 9: concurrent compare-and-set updates reject stale writes and permit refresh/retry
+ok 9 - chaos 9: concurrent compare-and-set updates reject stale writes and permit refresh/retry
+  ---
+  duration_ms: 17792.908549
+  type: 'test'
+  ...
+# Subtest: chaos 10: SIGKILL before-write recovers committed history and retries exactly once
+ok 10 - chaos 10: SIGKILL before-write recovers committed history and retries exactly once
+  ---
+  duration_ms: 34579.824297
+  type: 'test'
+  ...
+# Subtest: chaos 10: SIGKILL after-write recovers committed history and retries exactly once
+ok 11 - chaos 10: SIGKILL after-write recovers committed history and retries exactly once
+  ---
+  duration_ms: 34027.381541
+  type: 'test'
+  ...
+# Subtest: chaos PostgreSQL: outage/recovery, replica retries, and atomic competing updates
+ok 12 - chaos PostgreSQL: outage/recovery, replica retries, and atomic competing updates
+  ---
+  duration_ms: 51393.295282
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 318454.577787
