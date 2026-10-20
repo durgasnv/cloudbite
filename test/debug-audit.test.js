@@ -118,3 +118,15 @@ test('D06: blocked sessionStorage does not crash Orders initialization or staff 
   assert.doesNotThrow(() => ui.context.promptAdminMode());
   assert.equal(ui.run('isAdminMode'), false);
 });
+
+test('D07: unavailable menu dishes cannot be added through controls or programmatic cart calls', async () => {
+  const ui = browser('menu');
+  ui.run("currentMenu = [{id: 1, restaurantId: 1, name: 'Unavailable', price: 100, isAvailable: false}]; renderMenuItems();");
+  const button = ui.all(ui.node('menuGrid')).find(node => node.className === 'food-add-btn');
+  assert.equal(button.disabled, true);
+  button.fire('click');
+  ui.context.addToCart({ id: 1, name: 'Unavailable', price: 100, isAvailable: false });
+  assert.equal(ui.context.getCart().length, 0);
+  ui.context.addToCart({ id: 2, name: 'Available', price: 100, isAvailable: true });
+  assert.equal(ui.context.getCart().length, 1);
+});

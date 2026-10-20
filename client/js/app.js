@@ -99,7 +99,7 @@ function saveCart(cart) {
 }
 
 function addToCart(item) {
-  if (!item) return;
+  if (!item || item.isAvailable === false) return;
   const cart = getCart();
   const existingItemIndex = cart.findIndex(i => Number(i.id) === Number(item.id));
 

@@ -258,10 +258,12 @@ function renderMenuItems() {
 
     const addBtn = document.createElement('button');
     addBtn.className = 'food-add-btn';
-    addBtn.textContent = '+ ADD';
+    addBtn.disabled = item.isAvailable === false;
+    addBtn.textContent = addBtn.disabled ? 'Unavailable' : '+ ADD';
+    addBtn.setAttribute('aria-disabled', String(addBtn.disabled));
     addBtn.setAttribute('aria-label', `Add ${item.name} to cart`);
     addBtn.addEventListener('click', () => {
-      addToCart(item);
+      if (item.isAvailable !== false) addToCart(item);
     });
 
     imgSection.appendChild(img);
