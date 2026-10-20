@@ -5,6 +5,7 @@
 
 let allRestaurants = [];
 let allMenuItems = [];
+let dishSearchUnavailable = false;
 let currentCuisineFilter = 'all';
 let currentSearchQuery = '';
 let currentCityFilter = '';
@@ -106,6 +107,8 @@ async function initRestaurantsPage() {
 }
 
 async function fetchRestaurants() {
+  dishSearchUnavailable = true;
+  allMenuItems = [];
   const container = document.getElementById('restaurantsGrid');
   if (!container) return;
 
@@ -146,6 +149,7 @@ async function fetchRestaurants() {
         const menuJson = await menuRes.json();
         if (menuJson.success && Array.isArray(menuJson.data)) {
           allMenuItems = menuJson.data;
+          dishSearchUnavailable = false;
         }
       } catch (e) {
         console.warn('Could not parse menu data for food search:', e);
@@ -247,10 +251,16 @@ function renderFilteredRestaurants() {
   const countLabel = document.getElementById('restaurantCountLabel');
   if (!container) return;
 
+  if (dishSearchUnavailable && currentSearchQuery) {
+    if (countLabel) countLabel.textContent = 'Search unavailable';
+    renderErrorState(container, 'Dish search is unavailable. Retry to load complete search results.');
+    return;
+  }
+
   const filtered = filterRestaurants(allRestaurants, allMenuItems, currentSearchQuery, currentCuisineFilter, currentCityFilter);
 
   if (countLabel) {
-    countLabel.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? 'restaurant' : 'restaurants'}`;
+    countLabel.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? 'restaurant' : 'restaurants'}${dishSearchUnavailable ? ' (dish search unavailable)' : ''}`;
   }
 
   container.innerHTML = '';

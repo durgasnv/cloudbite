@@ -130,3 +130,18 @@ test('D07: unavailable menu dishes cannot be added through controls or programma
   ui.context.addToCart({ id: 2, name: 'Available', price: 100, isAvailable: true });
   assert.equal(ui.context.getCart().length, 1);
 });
+
+test('D08: missing menu data must not silently turn a complete dish search into partial success', async () => {
+  overrides.set(path.resolve(__dirname, '../server/data/menu.json'), '{broken');
+  assert.equal((await request('/api/restaurants?search=biryani')).status, 503);
+});
+
+test('D08: frontend dish-search failure is visible instead of partial success', async () => {
+  const ui = browser('restaurants');
+  ui.run("currentSearchQuery = 'biryani';");
+  ui.context.fetch = async target => ({ ok: !target.endsWith('/menu'), status: target.endsWith('/menu') ? 503 : 200,
+    json: async () => target.endsWith('/menu') ? { success: false } : { success: true, data: restaurants } });
+  await ui.context.fetchRestaurants();
+  assert.match(ui.all(ui.node('restaurantsGrid')).map(node => node.textContent).join(' '), /unavailable|unable/i);
+  assert.doesNotMatch(ui.node('restaurantCountLabel').textContent, /^Showing \d+ restaurants$/);
+});

@@ -44,7 +44,9 @@ router.get('/', async (req, res, next) => {
       try {
         menuItems = await readJsonFile(menuFilePath);
       } catch (e) {
-        menuItems = [];
+        const error = new Error('Dish search unavailable');
+        error.status = 503;
+        throw error;
       }
       const query = search.toLowerCase().trim();
 
