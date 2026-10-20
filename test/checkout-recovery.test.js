@@ -113,6 +113,23 @@ test('manual tracking sends the private token in a header and renders customer t
   assert.ok(texts.includes('<img src=x onerror=alert(1)>'));
 });
 
+test('malformed price refresh preserves cart and error until valid menu recovery', async () => {
+  const original = JSON.stringify([{ id: 1, name: 'Dish', price: 100, quantity: 1 }]);
+  const values = new Map([['cloudbite_cart', original]]);
+  const { context, node } = browser('cart', values);
+  context.showToast = () => {};
+  for (const data of [[null], [{ id: 1, name: 'Dish', price: 'broken' }]]) {
+    context.fetch = async () => ({ ok: true, json: async () => ({ success: true, data }) });
+    assert.equal(await context.refreshCartPrices(), false);
+    assert.equal(values.get('cloudbite_cart'), original);
+    assert.equal(node('checkoutErrorContainer').style.display, 'block');
+  }
+  context.fetch = async () => ({ ok: true, json: async () => ({ success: true,
+    data: [{ id: 1, name: 'Dish', price: 119, isAvailable: true }] }) });
+  assert.equal(await context.refreshCartPrices(), true);
+  assert.equal(JSON.parse(values.get('cloudbite_cart'))[0].price, 119);
+});
+
 test('uncertain checkout reuses the persisted attempt key after page reload', async () => {
   const values = new Map([['cloudbite_cart', JSON.stringify([{ id: 1, name: 'Dish', price: 100, quantity: 1 }])]]);
   const first = browser('cart', values);

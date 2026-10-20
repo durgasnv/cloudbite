@@ -201,8 +201,7 @@ function showCheckoutError(message, showRefreshAction = false) {
     refreshBtn.style.cssText = 'background: white; border-color: #f87171; color: #991b1b; padding: 0.25rem 0.6rem; font-size: 0.8rem;';
     refreshBtn.textContent = '🔄 Review & Refresh Cart Prices';
     refreshBtn.addEventListener('click', async () => {
-      await refreshCartPrices();
-      errContainer.style.display = 'none';
+      if (await refreshCartPrices()) errContainer.style.display = 'none';
     });
     errContainer.appendChild(refreshBtn);
   }
@@ -219,11 +218,14 @@ function clearCheckoutError() {
 // Refresh cart prices from backend menu without losing user selection
 async function refreshCartPrices() {
   try {
-    const res = await fetch(`${API_BASE_URL}/menu`);
+    const { response: res, data: json } = await fetchApi(`${API_BASE_URL}/menu`);
     if (!res.ok) throw new Error('Could not fetch current menu.');
-    const json = await res.json();
     if (!json.success || !Array.isArray(json.data)) throw new Error('Invalid menu data.');
 
+    if (json.data.some(item => !item || !Number.isSafeInteger(item.id) ||
+      typeof item.name !== 'string' || typeof item.price !== 'number' || !Number.isFinite(item.price) || item.price < 0)) {
+      throw new Error('Invalid menu records.');
+    }
     const currentMenu = json.data;
     const cart = getCart();
     let updatedCount = 0;
@@ -258,9 +260,12 @@ async function refreshCartPrices() {
     } else if (removedCount === 0) {
       showToast('Cart prices are up to date.', 'info');
     }
+    return true;
   } catch (err) {
+    showCheckoutError('Failed to refresh menu prices. Your cart is unchanged. Please retry.', true);
     console.error('Error refreshing cart:', err);
     showToast('Failed to refresh menu prices', 'error');
+    return false;
   }
 }
 
