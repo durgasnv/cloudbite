@@ -163,3 +163,22 @@ test('D09: malformed catalog structures fail closed on listing, filtering, detai
   overrides.clear();
   assert.equal((await request('/api/menu')).status, 200);
 });
+
+test('D10: branch jobs sharing BUILD_NUMBER cannot publish identical image tags', async () => {
+  const pipeline = await readFile(path.resolve(__dirname, '../Jenkinsfile'), 'utf8');
+  function references(job, build, commit = 'a'.repeat(40)) {
+    if (pipeline.includes('node scripts/image-tags.js')) {
+      return execFileSync(process.execPath, [path.resolve(__dirname, '../scripts/image-tags.js')], {
+        env: { PATH: process.env.PATH, JOB_NAME: job, BUILD_NUMBER: String(build), GIT_COMMIT: commit }
+      }).toString().trim().split('\n');
+    }
+    return [...pipeline.matchAll(/env\.(?:BACKEND|FRONTEND)_IMAGE = "([^"]+)"/g)].map(match =>
+      match[1].replace('${env.BUILD_NUMBER}', String(build)));
+  }
+  const main = references('cloudbite/main', 42);
+  const feature = references('cloudbite/feature/api', 42);
+  assert.equal(main.length, 2);
+  assert.notDeepEqual(main, feature);
+  assert.notDeepEqual(main, references('cloudbite/main', 43));
+  for (const ref of [...main, ...feature]) assert.match(ref, /^cloudbite-(backend|frontend):[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/);
+});

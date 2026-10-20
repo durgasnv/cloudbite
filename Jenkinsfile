@@ -74,8 +74,9 @@ pipeline {
         stage('Build Images') {
             steps {
                 script {
-                    env.BACKEND_IMAGE = "cloudbite-backend:${env.BUILD_NUMBER}"
-                    env.FRONTEND_IMAGE = "cloudbite-frontend:${env.BUILD_NUMBER}"
+                    def images = sh(script: 'node scripts/image-tags.js', returnStdout: true).trim().split('\n')
+                    env.BACKEND_IMAGE = images[0]
+                    env.FRONTEND_IMAGE = images[1]
                 }
                 sh '''
                     docker build -f docker/backend.Dockerfile -t "$BACKEND_IMAGE" .
