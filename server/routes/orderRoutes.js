@@ -266,6 +266,7 @@ router.post('/', async (req, res, next) => {
     const orderAccessToken = checkoutKey ? tokenFor(orderId) : crypto.randomBytes(32).toString('hex');
     const newOrder = {
       id: orderId,
+      version: 0,
       ...(checkoutKey ? { idempotencyHash, requestHash } : {}),
       accessTokenHash: crypto.createHash('sha256').update(orderAccessToken).digest('hex'),
       customerName: customerName.trim(),
@@ -311,7 +312,10 @@ router.patch('/:id/status', async (req, res, next) => {
 
     const orderId = String(req.params.id).trim().toUpperCase();
     if (!isRecord(req.body)) throw badRequest('Validation failed: request body must be an object.');
-    const { status } = req.body;
+    const { status, expectedVersion } = req.body;
+    if (expectedVersion !== undefined && (!Number.isInteger(expectedVersion) || expectedVersion < 0)) {
+      throw badRequest('expectedVersion must be a non-negative integer.');
+    }
     const validStatuses = ['CONFIRMED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED'];
 
     if (typeof status !== 'string' || !validStatuses.includes(status.toUpperCase())) {
@@ -321,7 +325,7 @@ router.patch('/:id/status', async (req, res, next) => {
       });
     }
 
-    const updatedOrder = await orderStore.updateOrderStatus(orderId, status.toUpperCase());
+    const updatedOrder = await orderStore.updateOrderStatus(orderId, status.toUpperCase(), expectedVersion);
     if (!updatedOrder) {
       return res.status(404).json({
         success: false,

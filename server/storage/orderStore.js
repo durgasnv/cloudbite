@@ -75,16 +75,22 @@ async function createOrder(order) {
   return localStore.createOrder(order);
 }
 
-async function updateOrderStatus(id, status) {
+async function updateOrderStatus(id, status, expectedVersion) {
   if (pool) {
     await ensureSchema();
     const result = await pool.query(
-      "UPDATE cloudbite_orders SET data = jsonb_set(data, '{status}', to_jsonb($2::text)) WHERE id = $1 RETURNING data",
-      [id, status]
+      `UPDATE cloudbite_orders SET data = data || jsonb_build_object('status', $2::text,
+        'version', COALESCE((data->>'version')::integer, 0) + 1)
+       WHERE id = $1 AND ($3::integer IS NULL OR COALESCE((data->>'version')::integer, 0) = $3)
+       RETURNING data`,
+      [id, status, expectedVersion ?? null]
     );
+    if (!result.rows[0] && expectedVersion !== undefined && await findOrder(id)) {
+      throw conflict('Order changed. Refresh before updating its status.');
+    }
     return result.rows[0]?.data;
   }
-  return localStore.updateOrderStatus(id, status);
+  return localStore.updateOrderStatus(id, status, expectedVersion);
 }
 
 async function checkStorage() {

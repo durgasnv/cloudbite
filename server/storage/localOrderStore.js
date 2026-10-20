@@ -81,10 +81,16 @@ function createLocalOrderStore(filePath) {
         return order;
       });
     },
-    updateOrderStatus(id, status) {
+    updateOrderStatus(id, status, expectedVersion) {
       return mutate(orders => {
         const order = orders.find(item => item.id === id);
-        if (order) order.status = status;
+        if (order) {
+          if (expectedVersion !== undefined && (order.version || 0) !== expectedVersion) {
+            throw conflict('Order changed. Refresh before updating its status.');
+          }
+          order.status = status;
+          order.version = (order.version || 0) + 1;
+        }
         return order;
       });
     },

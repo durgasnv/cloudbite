@@ -422,7 +422,7 @@ function renderOrdersList(orders, showAdminControls = false) {
       });
 
       select.addEventListener('change', (e) => {
-        handleStatusChange(order.id, e.target.value);
+        handleStatusChange(order.id, e.target.value, order.version || 0);
       });
 
       controls.appendChild(select);
@@ -435,7 +435,7 @@ function renderOrdersList(orders, showAdminControls = false) {
         nextBtn.textContent = 'Next Stage ➔';
         nextBtn.setAttribute('aria-label', `Advance order ${order.id} to next stage`);
         nextBtn.addEventListener('click', () => {
-          advanceNextStage(order.id, rawStatus);
+          advanceNextStage(order.id, rawStatus, order.version || 0);
         });
         controls.appendChild(nextBtn);
       }
@@ -539,7 +539,7 @@ function renderOrdersList(orders, showAdminControls = false) {
 }
 
 // Interactive Status Transition Simulation (Admin Protected)
-async function handleStatusChange(orderId, newStatus) {
+async function handleStatusChange(orderId, newStatus, expectedVersion) {
   const adminToken = getAdminToken();
   if (!adminToken) {
     showToast('Admin authorization required to change order status', 'error');
@@ -553,11 +553,12 @@ async function handleStatusChange(orderId, newStatus) {
         'Content-Type': 'application/json',
         'x-admin-token': adminToken
       },
-      body: JSON.stringify({ status: newStatus })
+      body: JSON.stringify({ status: newStatus, expectedVersion })
     });
 
     const result = await response.json();
     if (!response.ok || !result.success) {
+      if (response.status === 409) await fetchOrders();
       throw new Error(result.message || 'Failed to update status');
     }
 
@@ -569,12 +570,12 @@ async function handleStatusChange(orderId, newStatus) {
   }
 }
 
-function advanceNextStage(orderId, currentStatus) {
+function advanceNextStage(orderId, currentStatus, expectedVersion) {
   const stages = ['CONFIRMED', 'PREPARING', 'READY', 'COMPLETED'];
   const currentIndex = stages.indexOf(currentStatus.toUpperCase());
   if (currentIndex > -1 && currentIndex < stages.length - 1) {
     const nextStatus = stages[currentIndex + 1];
-    handleStatusChange(orderId, nextStatus);
+    handleStatusChange(orderId, nextStatus, expectedVersion);
   }
 }
 
