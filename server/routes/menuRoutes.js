@@ -1,0 +1,79 @@
+const express = require('express');
+const router = express.Router();
+const { readCatalog: readJsonFile } = require('../utils/catalog');
+const path = require('path');
+const { validateQuery, positiveInteger, badRequest } = require('../utils/validation');
+
+const menuFilePath = path.join(__dirname, '../data/menu.json');
+
+// Helper to read JSON files safely
+
+// GET /api/menu - Get all menu items (FR-03)
+router.get('/', async (req, res, next) => {
+  try {
+    const { category, restaurantId, search } = req.query;
+    validateQuery(req.query, ['category', 'restaurantId', 'search']);
+    const parsedRestaurantId = restaurantId === undefined ? undefined : positiveInteger(restaurantId);
+    if (parsedRestaurantId === null) throw badRequest('Invalid restaurantId. Must be a positive integer.');
+    let menuItems = await readJsonFile(menuFilePath);
+
+    if (category) {
+      menuItems = menuItems.filter(
+        item => (item.category || '').toLowerCase() === category.toLowerCase()
+      );
+    }
+
+    if (parsedRestaurantId !== undefined) {
+      menuItems = menuItems.filter(item => item.restaurantId === parsedRestaurantId);
+    }
+
+    if (search) {
+      const query = search.toLowerCase();
+      menuItems = menuItems.filter(
+        item =>
+          item.name.toLowerCase().includes(query) ||
+          (item.description || '').toLowerCase().includes(query)
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      count: menuItems.length,
+      data: menuItems
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/menu/:id - Get a specific menu item
+router.get('/:id', async (req, res, next) => {
+  try {
+    const itemId = positiveInteger(req.params.id);
+    if (itemId === null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid menu item ID. Must be a valid number.'
+      });
+    }
+
+    const menuItems = await readJsonFile(menuFilePath);
+    const item = menuItems.find(i => i.id === itemId);
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: `Menu item with ID ${itemId} not found.`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: item
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = router;

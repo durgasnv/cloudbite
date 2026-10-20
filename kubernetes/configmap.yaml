@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudbite-backend-config
+  namespace: cloudbite
+  labels:
+    app.kubernetes.io/part-of: cloudbite
+data:
+  NODE_ENV: production
+  PORT: "5000"

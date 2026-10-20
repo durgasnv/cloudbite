@@ -1,0 +1,146 @@
+const express = require('express');
+const router = express.Router();
+const { readCatalog: readJsonFile } = require('../utils/catalog');
+const path = require('path');
+const { validateQuery, positiveInteger } = require('../utils/validation');
+
+const restaurantsFilePath = path.join(__dirname, '../data/restaurants.json');
+const menuFilePath = path.join(__dirname, '../data/menu.json');
+
+// Helper to read JSON files safely
+
+function restaurantCity(restaurant) {
+  return String(restaurant.city || String(restaurant.location || '').split(',').pop()).trim();
+}
+
+// GET /api/restaurants - Filter by city, search, and cuisine (FR-01)
+router.get('/', async (req, res, next) => {
+  try {
+    const { search, cuisine, city } = req.query;
+    validateQuery(req.query, ['search', 'cuisine', 'city']);
+    let restaurants = await readJsonFile(restaurantsFilePath);
+    let menuItems = [];
+
+    if (city && city.trim()) {
+      const selectedCity = city.trim().toLocaleLowerCase();
+      restaurants = restaurants.filter(restaurant =>
+        restaurantCity(restaurant).toLocaleLowerCase() === selectedCity
+      );
+    }
+
+    if (search) {
+      try {
+        menuItems = await readJsonFile(menuFilePath);
+      } catch (e) {
+        const error = new Error('Dish search unavailable');
+        error.status = 503;
+        throw error;
+      }
+      const query = search.toLowerCase().trim();
+
+      restaurants = restaurants.filter(restaurant => {
+        const matchesRestaurant =
+          restaurant.name.toLowerCase().includes(query) ||
+          restaurant.cuisine.toLowerCase().includes(query) ||
+          restaurant.location.toLowerCase().includes(query);
+
+        const matchingDishes = menuItems.filter(
+          item => item.restaurantId === restaurant.id &&
+            (item.name.toLowerCase().includes(query) ||
+             (item.description && (item.description || '').toLowerCase().includes(query)) ||
+             (item.category && (item.category || '').toLowerCase().includes(query)))
+        );
+
+        if (matchingDishes.length > 0) {
+          restaurant.matchedDishes = matchingDishes.map(d => d.name);
+        }
+
+        return matchesRestaurant || matchingDishes.length > 0;
+      });
+    }
+
+    if (cuisine && cuisine.toLowerCase() !== 'all') {
+      const cuisineQuery = cuisine.toLowerCase().trim();
+      restaurants = restaurants.filter(restaurant =>
+        cuisineQuery === 'american / fast food'
+          ? /american|fast\s*food/i.test(restaurant.cuisine)
+          : restaurant.cuisine.toLowerCase().includes(cuisineQuery)
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      count: restaurants.length,
+      data: restaurants
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/restaurants/:id - Get a specific restaurant (FR-02)
+router.get('/:id', async (req, res, next) => {
+  try {
+    const restaurantId = positiveInteger(req.params.id);
+    if (restaurantId === null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid restaurant ID. Must be a valid number.'
+      });
+    }
+
+    const restaurants = await readJsonFile(restaurantsFilePath);
+    const restaurant = restaurants.find(r => r.id === restaurantId);
+
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: `Restaurant with ID ${restaurantId} not found.`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: restaurant
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/restaurants/:id/menu - Get menu items for a specific restaurant (FR-03)
+router.get('/:id/menu', async (req, res, next) => {
+  try {
+    const restaurantId = positiveInteger(req.params.id);
+    if (restaurantId === null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid restaurant ID. Must be a valid number.'
+      });
+    }
+
+    const restaurants = await readJsonFile(restaurantsFilePath);
+    const restaurantExists = restaurants.some(r => r.id === restaurantId);
+
+    if (!restaurantExists) {
+      return res.status(404).json({
+        success: false,
+        message: `Restaurant with ID ${restaurantId} not found.`
+      });
+    }
+
+    const menuItems = await readJsonFile(menuFilePath);
+    const restaurantMenu = menuItems.filter(item => item.restaurantId === restaurantId);
+
+    res.status(200).json({
+      success: true,
+      restaurantId: restaurantId,
+      count: restaurantMenu.length,
+      data: restaurantMenu
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = router;

@@ -1,0 +1,350 @@
+const express = require('express');
+const router = express.Router();
+const { readCatalog: readJsonFile } = require('../utils/catalog');
+const path = require('path');
+const crypto = require('crypto');
+const orderStore = require('../storage/orderStore');
+const { verifyReplay } = require('../storage/orderErrors');
+const { badRequest, isRecord, positiveInteger, nonnegativeNumber } = require('../utils/validation');
+
+const menuFilePath = path.join(__dirname, '../data/menu.json');
+const restaurantsFilePath = path.join(__dirname, '../data/restaurants.json');
+
+const ADMIN_TOKEN = ['admin123', 'admin-secret-key'].includes(process.env.ADMIN_TOKEN)
+  ? undefined : process.env.ADMIN_TOKEN;
+
+const adminExpiry = process.env.ADMIN_TOKEN_EXPIRES_AT ? Date.parse(process.env.ADMIN_TOKEN_EXPIRES_AT) : Infinity;
+if (Number.isNaN(adminExpiry)) throw new Error('ADMIN_TOKEN_EXPIRES_AT must be an ISO date.');
+
+function tokenMatches(provided, expected) {
+  if (typeof provided !== 'string' || typeof expected !== 'string' || !expected) return false;
+  const left = Buffer.from(provided);
+  const right = Buffer.from(expected);
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
+function publicOrder(order) {
+  const { accessTokenHash, idempotencyHash, requestHash, ...details } = order;
+  return details;
+}
+
+function customerOrder(order) {
+  const { customerPhone, customerAddress, ...details } = publicOrder(order);
+  return details;
+}
+
+// Helper to verify admin credentials
+function isAdmin(req) {
+  if (Date.now() >= adminExpiry) return false;
+  const tokenHeader = req.headers['x-admin-token'];
+  const authHeader = req.headers['authorization'];
+  if (tokenMatches(tokenHeader, ADMIN_TOKEN)) return true;
+  if (authHeader) {
+    const parts = authHeader.split(' ');
+    if (parts.length === 2 && parts[0] === 'Bearer' && tokenMatches(parts[1], ADMIN_TOKEN)) return true;
+  }
+  return false;
+}
+
+// Catalog failures must not masquerade as an empty menu.
+
+// GET /api/orders - Get orders with access control (FR-08)
+// Only authenticated staff can list orders.
+router.get('/', async (req, res, next) => {
+  try {
+    if (isAdmin(req)) {
+      const orders = await orderStore.listOrders();
+      const sortedOrders = [...orders].reverse();
+      return res.status(200).json({
+        success: true,
+        count: sortedOrders.length,
+        isAdmin: true,
+        data: sortedOrders.map(publicOrder)
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      count: 0,
+      isAdmin: false,
+      data: [],
+      message: 'Staff authorization is required to list orders.'
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/orders/:id - Get a specific order by ID (FR-08)
+router.get('/:id', async (req, res, next) => {
+  try {
+    const orderId = String(req.params.id).trim().toUpperCase();
+    const order = await orderStore.findOrder(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: `Order with ID ${orderId} not found.`
+      });
+    }
+
+    const staff = isAdmin(req);
+    if (!staff) {
+      const token = req.headers['x-order-token'];
+      const tokenHash = typeof token === 'string' ? crypto.createHash('sha256').update(token).digest('hex') : '';
+      if (!tokenMatches(tokenHash, order.accessTokenHash)) {
+        return res.status(403).json({ success: false, message: 'Order access token required.' });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      isAdmin: staff,
+      data: staff ? publicOrder(order) : customerOrder(order)
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/orders - Simulated Order Placement with Authoritative Pricing (FR-07)
+router.post('/', async (req, res, next) => {
+  try {
+    if (!isRecord(req.body)) throw badRequest('Validation failed: request body must be an object.');
+    const { customerName, customerPhone, customerAddress, items, totalAmount } = req.body;
+    const checkoutKey = req.headers['idempotency-key'];
+    if (checkoutKey !== undefined && (typeof checkoutKey !== 'string' || !/^[A-Za-z0-9_-]{16,128}$/.test(checkoutKey))) {
+      throw badRequest('Idempotency-Key must contain 16-128 letters, numbers, underscores or hyphens.');
+    }
+    const idempotencyHash = checkoutKey ? crypto.createHash('sha256').update(checkoutKey).digest('hex') : undefined;
+    // Explicit fields give the same fingerprint independent of JSON object key order.
+    const requestHash = crypto.createHash('sha256').update(JSON.stringify([
+      customerName, customerPhone, customerAddress,
+      Array.isArray(items) ? items.map(item => item && [item.id, item.quantity, item.price]) : items,
+      totalAmount
+    ])).digest('hex');
+
+    const tokenFor = id => crypto.createHmac('sha256', checkoutKey).update(id).digest('hex');
+    if (idempotencyHash) {
+      const existing = await orderStore.findOrderByKey(idempotencyHash);
+      if (existing) {
+        verifyReplay(existing, { requestHash });
+        return res.status(200).json({ success: true, message: 'Order already confirmed.',
+          data: customerOrder(existing), orderAccessToken: tokenFor(existing.id) });
+      }
+    }
+
+    // Validate customer name
+    if (!customerName || typeof customerName !== 'string' || customerName.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed: customerName is required and must be a valid string.'
+      });
+    }
+
+    for (const [field, value] of Object.entries({ customerPhone, customerAddress })) {
+      if (value !== undefined && typeof value !== 'string') {
+        throw badRequest(`Validation failed: ${field} must be a string.`);
+      }
+    }
+
+    // Validate cart items
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed: items must be a non-empty array of food items.'
+      });
+    }
+
+    // Authoritative pricing check against menu.json
+    const menuItems = await readJsonFile(menuFilePath);
+    const restaurants = await readJsonFile(restaurantsFilePath);
+    const restaurantsById = new Map(restaurants.map(restaurant => [restaurant.id, restaurant]));
+    const deliveryCities = new Set();
+    let authoritativeSubtotal = 0;
+    const verifiedItems = [];
+    const quantitiesById = new Map();
+
+    for (const item of items) {
+      if (!isRecord(item)) throw badRequest('Validation failed: each item must be an object.');
+      const quantity = positiveInteger(item.quantity);
+      if (quantity === null) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed: each item must contain a positive integer quantity.'
+        });
+      }
+      if (quantity > 50) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed: maximum allowed quantity per item is 50.'
+        });
+      }
+
+      // Look up authoritative menu item
+      const itemId = positiveInteger(item.id);
+      if (itemId === null) throw badRequest('Validation failed: item ID must be a positive integer.');
+      const aggregateQuantity = (quantitiesById.get(itemId) || 0) + quantity;
+      if (aggregateQuantity > 50) throw badRequest('Validation failed: maximum total quantity per item is 50.');
+      quantitiesById.set(itemId, aggregateQuantity);
+      const menuItem = menuItems.find(m => m.id === itemId);
+
+      if (!menuItem) {
+        return res.status(400).json({
+          success: false,
+          message: `Validation failed: item with ID "${item.id}" was not found in the menu.`,
+          unavailableItemId: item.id
+        });
+      }
+
+      const restaurant = restaurantsById.get(menuItem.restaurantId);
+      const city = restaurant && String(restaurant.city || String(restaurant.location || '').split(',').pop()).trim().toLocaleLowerCase();
+      if (!city) {
+        const error = new Error('Restaurant location unavailable');
+        error.status = 503;
+        throw error;
+      }
+      deliveryCities.add(city);
+      if (deliveryCities.size > 1) throw badRequest('Items from different cities cannot share one delivery.');
+
+      if (menuItem.isAvailable === false) {
+        return res.status(400).json({
+          success: false,
+          message: `Validation failed: item "${menuItem.name}" is currently unavailable.`,
+          unavailableItemId: item.id
+        });
+      }
+
+      const authoritativePrice = Number(menuItem.price);
+      if (!Number.isFinite(authoritativePrice) || authoritativePrice < 0) {
+        const error = new Error('Menu catalog unavailable');
+        error.status = 503;
+        throw error;
+      }
+
+      // Check if client provided price mismatch
+      const submittedPrice = item.price === undefined ? undefined : nonnegativeNumber(item.price);
+      if (submittedPrice === null) throw badRequest('Validation failed: item price must be a finite non-negative number.');
+      if (submittedPrice !== undefined && Math.abs(submittedPrice - authoritativePrice) > 0.01) {
+        return res.status(400).json({
+          success: false,
+          priceChanged: true,
+          message: `Price mismatch for "${menuItem.name}". Current price is ₹${authoritativePrice}. Please refresh your cart.`,
+          expectedPrice: authoritativePrice,
+          receivedPrice: item.price
+        });
+      }
+
+      const itemTotal = authoritativePrice * quantity;
+      authoritativeSubtotal += itemTotal;
+
+      verifiedItems.push({
+        id: menuItem.id,
+        name: menuItem.name,
+        price: authoritativePrice,
+        quantity: quantity,
+        itemTotal: itemTotal
+      });
+    }
+
+    // Authoritative total calculation
+    const deliveryFee = (authoritativeSubtotal >= 500 || authoritativeSubtotal === 0) ? 0 : 40;
+    const platformFee = authoritativeSubtotal > 0 ? 10 : 0;
+    const authoritativeTotal = authoritativeSubtotal + deliveryFee + platformFee;
+
+    if (totalAmount !== undefined) {
+      const numericClientTotal = nonnegativeNumber(totalAmount);
+      if (numericClientTotal === null || Math.abs(numericClientTotal - authoritativeTotal) > 0.01) {
+        return res.status(400).json({
+          success: false,
+          priceChanged: true,
+          message: `Order total mismatch. Authoritative total is ₹${authoritativeTotal}. Please review your cart.`,
+          authoritativeTotal: authoritativeTotal
+        });
+      }
+    }
+
+    const orderId = `ORD${crypto.randomBytes(12).toString('hex').toUpperCase()}`;
+
+    // A high-entropy checkout key is a private recovery credential. Persist only its hash.
+    const orderAccessToken = checkoutKey ? tokenFor(orderId) : crypto.randomBytes(32).toString('hex');
+    const newOrder = {
+      id: orderId,
+      version: 0,
+      ...(checkoutKey ? { idempotencyHash, requestHash } : {}),
+      accessTokenHash: crypto.createHash('sha256').update(orderAccessToken).digest('hex'),
+      customerName: customerName.trim(),
+      customerPhone: customerPhone ? String(customerPhone).trim() : 'Not provided',
+      customerAddress: customerAddress ? String(customerAddress).trim() : 'Standard Delivery',
+      items: verifiedItems,
+      subtotal: authoritativeSubtotal,
+      deliveryFee,
+      platformFee,
+      totalAmount: authoritativeTotal,
+      status: 'CONFIRMED',
+      createdAt: new Date().toISOString(),
+      formattedDate: new Date().toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      })
+    };
+
+    const persistedOrder = await orderStore.createOrder(newOrder);
+    const confirmed = persistedOrder || newOrder;
+
+    res.status(201).json({
+      success: true,
+      message: 'Order placed successfully!',
+      data: customerOrder(confirmed),
+      orderAccessToken: checkoutKey ? tokenFor(confirmed.id) : orderAccessToken
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PATCH /api/orders/:id/status - Update order status (Admin Access Required) (FR-08)
+router.patch('/:id/status', async (req, res, next) => {
+  try {
+    // Enforce administrative access control
+    if (!isAdmin(req)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Admin authorization required to update order status.'
+      });
+    }
+
+    const orderId = String(req.params.id).trim().toUpperCase();
+    if (!isRecord(req.body)) throw badRequest('Validation failed: request body must be an object.');
+    const { status, expectedVersion } = req.body;
+    if (expectedVersion !== undefined && (!Number.isInteger(expectedVersion) || expectedVersion < 0)) {
+      throw badRequest('expectedVersion must be a non-negative integer.');
+    }
+    const validStatuses = ['CONFIRMED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED'];
+
+    if (typeof status !== 'string' || !validStatuses.includes(status.toUpperCase())) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}.`
+      });
+    }
+
+    const updatedOrder = await orderStore.updateOrderStatus(orderId, status.toUpperCase(), expectedVersion);
+    if (!updatedOrder) {
+      return res.status(404).json({
+        success: false,
+        message: `Order with ID ${orderId} not found.`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Order status updated to ${status.toUpperCase()}`,
+      data: publicOrder(updatedOrder)
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = router;

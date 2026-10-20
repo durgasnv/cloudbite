@@ -1,0 +1,48 @@
+# CloudBite project tracking
+
+Updated: 2026-10-20. Target behavior is defined in [system requirements](../requirements.md). This tracker records requested work and user-reported findings; the supplied reproductions have not been independently rerun for this documentation update. Entries were opened with owners unassigned and no completion evidence at intake; subsequent verification is recorded below. Existing workspace changes do not establish resolution.
+
+## Requested feature work
+
+| ID | Priority | Work | Acceptance / closure evidence | Requirements | Status |
+| --- | --- | --- | --- | --- | --- |
+| FEAT-01 | Unassigned | Refactor the dataset image mapping: food items currently share a single placeholder image. | Use an explicit mapping keyed by stable dish identity; representative distinct dishes show relevant images. Record image provenance and usage rights. Missing or broken images use a clearly identified fallback with meaningful alt text. Verify regeneration preserves mappings and identities. | FR-10 | Open |
+| FEAT-02 | Unassigned | Add GPS-based location filtering so a user in Hyderabad sees only eligible nearby Hyderabad restaurants. | Obtain permission through an explicit user action; resolve city and apply a documented delivery radius using verified outlet coordinates. Exclude other cities, out-of-radius outlets, and records without verified coordinates from GPS results. Validate eligibility on the backend through checkout. Cover location changes, permission denial, timeout, manual fallback, unknown cities, and no nearby outlets. | FR-11, FR-13, NFR-08 | Open |
+
+Before FEAT-02 implementation is accepted, select and document the delivery radius, coordinate enrichment/source, and city resolution method. The current historical catalog does not establish GPS accuracy or live restaurant serviceability. City-only manual selection shall be labeled accordingly. GPS discovery is in scope; continuous delivery tracking remains outside scope.
+
+## Existing bug / finding log
+
+The observations and reproduction counts below are supplied findings, not fresh verification results. Closure requires a recorded regression check against the final implementation; observed counts describe the reported snapshot rather than permanent catalog targets.
+
+| ID | Severity | Area | Finding / supplied evidence | Required fix and closure check | Requirements | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| BUG-01 | High | Dataset | Regeneration reassigns IDs. 27 IDs changed to different dishes at the same price, allowing stale carts to order the wrong dish. | Preserve outlet/dish/variant identity across reordered or changed input; never reuse IDs for different dishes. Re-run regeneration and stale-cart checkout, including equal-price replacements; reject or require review of changed items. | FR-10 | Open |
+| BUG-02 | High | Import | Interrupted import can leave restaurants and menus inconsistent. Reproduced 1,917 orphan menu records. | Validate and publish one complete catalog version atomically. Interrupt publication at intermediate steps; retain or recover a consistent version with zero orphan references. | FR-12 | Open |
+| BUG-03 | High | Checkout | Retrying after a lost response creates duplicate orders. Reproduced two persisted orders. | Persist checkout idempotency keys; retries and concurrent identical requests return the same order. Verify a dropped response followed by retry persists exactly one order; reject changed payloads with the same key. | FR-13 | Open |
+| BUG-04 | High | CI | Jenkins branch jobs can overwrite identical image tags on a shared Docker host. | Use job/branch/build-unique tags or immutable artifacts and deploy the scanned digest. Run competing branch builds on one host; verify builds, scans, deployments, and cleanup cannot overwrite or remove another job's artifacts. | Section 8, Stage 7 | Open |
+| BUG-05 | Medium | Dataset | Metadata enrichment can borrow ratings/prices from another outlet. | Require an unambiguous outlet match, retaining provenance. Verify same-name outlets in the same city cannot inherit each other's ratings or prices; leave ambiguous values unknown. | FR-10 | Open |
+| BUG-06 | Medium | Dataset | Twelve restaurant/dish groups have different prices without distinguishing variants. | Distinguish documented portion/size variants or flag ambiguous groups for review. Review all 12 reported groups and verify no indistinguishable duplicate prices remain. | FR-10 | Open |
+| BUG-07 | Medium | Checkout | One order can combine restaurants from different cities under one delivery calculation. | Reject cross-city carts on the server before charging delivery; enforce active-location eligibility. Verify a mixed-city payload fails and a valid same-city payload uses the documented delivery calculation. | FR-11, FR-13 | Open |
+| BUG-08 | Medium | Validation | Repeated item IDs bypass the 50-unit limit: two rows of 50 were accepted. | Aggregate quantities by ID before enforcing limits. Verify duplicate rows totaling 100 fail, while a total of 50 passes quantity validation. | FR-13 | Open |
+| BUG-09 | Medium | API | Invalid catalog structures can return HTTP 200 with `success: true`. | Validate catalog structure and report an appropriate non-2xx response with `success: false`. Exercise malformed restaurant and menu structures through affected endpoints. | FR-12 | Open |
+| BUG-10 | Medium | Filters | Fast Food filter returns zero results despite 13 matching restaurants. | Normalize cuisine values consistently. Against the reported fixture, return all 13 matches; when location filtering is active, return only the eligible subset. | FR-14, FR-11 | Open |
+| BUG-11 | Medium | Filters | Unknown city URLs silently display all 100 restaurants. | Preserve the requested city and show an explicit empty/unsupported state; verify an unknown city URL never falls back to the full catalog. | FR-11 | Open |
+| BUG-12 | Medium | Accessibility | Invisible confirmation-dialog links remain keyboard-focusable. | Remove hidden dialog content from the tab order. With the dialog closed, keyboard traversal cannot focus its links or controls. | NFR-07 | Open |
+| BUG-13 | Medium | Accessibility | Keyboard focus escapes the open confirmation dialog. | Contain focus while open and restore it on close. Verify forward/reverse Tab traversal and supported dismissal paths. | NFR-07 | Open |
+| BUG-14 | Medium | Orders | Overlapping lookups can display stale orders alongside a newer error state. | Cancel or ignore superseded responses. Resolve overlapping requests in both orders; only the newest lookup controls results, loading, and errors. | FR-15 | Open |
+| BUG-15 | Medium | Storage | Blocked sessionStorage can crash Orders-page initialization. | Handle storage access failures and keep manual lookup usable. Verify initialization and recovery when sessionStorage access throws. | FR-15 | Open |
+| BUG-16 | Medium | Menu | Unavailable dishes still have enabled Add buttons. | Disable unavailable Add controls and enforce availability on the server. Verify keyboard/mouse interaction and a direct order request cannot add/order an unavailable dish. | FR-14 | Open |
+| BUG-17 | Medium | Search | Menu API failure silently reduces dish-search results: 21 became 6. | Show a visible partial-results/error state and retry. Reproduce the menu API failure against the reported fixture; do not present 6 results as a complete successful search. | FR-14 | Open |
+| BUG-18 | Medium | Kubernetes | Database outages fail backend liveness, causing unnecessary restarts. | Separate dependency-aware readiness from process liveness. During a simulated database outage, readiness fails, liveness stays healthy, and restart count does not increase because of the dependency failure; readiness recovers when the database returns. | NFR-03 | Open |
+| BUG-19 | Low | Checkout | Failed price refresh hides the error without refreshing prices. | Keep the error visible and allow retry without implying prices were updated. Fail a refresh, then retry successfully; require review of changed prices before ordering. | FR-13 | Open |
+| BUG-20 | Low | Accessibility | Changing quantity loses keyboard focus. | Preserve focus through quantity updates; verify repeated keyboard increments/decrements and predictable focus when removing an item. | NFR-07 | Open |
+
+## Verification and completion
+
+For each entry, record the owner, implementation reference, validation command or manual steps, result, and verification date before changing its status to resolved. Documentation acceptance criteria are not implementation evidence. Prioritize the four High findings before the Medium and Low findings; coordinate the dataset refactor with stable IDs and safe publication, and GPS filtering with unknown-city handling and cross-city checkout validation.
+
+
+## Chaos verification follow-up — 2026-10-20
+
+The [chaos report](../CHAOS_REPORT.md) records local implementation and recovery evidence. BUG-03 is fixed for browser/keyed checkout retries, including disconnects and process restarts; legacy requests without a key can still duplicate orders. BUG-18 has separate process liveness and storage readiness, verified during an isolated PostgreSQL outage; the updated Kubernetes probe has not been exercised in a deployed cluster. BUG-19 now retains refresh errors and preserves the cart on invalid menu data; the recovery regression covers a later successful refresh. These findings remain open here for the stated legacy/deployment checks or full original reproduction closure; other entries are unchanged.

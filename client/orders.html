@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order History - CloudBite</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo">
+        <div class="logo-icon">🍔</div>
+        <div>Cloud<span class="highlight">Bite</span></div>
+      </a>
+
+      <button class="mobile-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navbarLinks">☰</button>
+
+      <ul class="nav-links" id="navbarLinks">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="restaurants.html" class="nav-link">Restaurants</a></li>
+        <li><a href="orders.html" class="nav-link active">Order History</a></li>
+        <li>
+          <a href="cart.html" class="nav-link cart-link">
+            🛒 Cart <span class="cart-badge">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container" style="max-width: 850px;">
+
+      <!-- Header -->
+      <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 class="section-title">Your Order History</h1>
+          <p class="section-subtitle">Track and review your personal food orders in real time (FR-08)</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button id="refreshOrdersBtn" class="btn btn-outline btn-sm" type="button">
+            🔄 Refresh
+          </button>
+          <button id="adminModeToggleBtn" class="btn btn-outline btn-sm" type="button" style="border-color: #6366f1; color: #4f46e5;">
+            ⚙️ Staff Mode
+          </button>
+        </div>
+      </div>
+
+      <!-- Staff Active Banner -->
+      <div id="adminModeBanner" style="display: none; background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 0.75rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;" role="region" aria-label="Staff Mode Status">
+        <div>
+          <strong style="font-size: 0.95rem;">⚙️ Staff Mode Active</strong>
+          <div style="font-size: 0.8rem; color: #4338ca; margin-top: 0.15rem;">
+            Viewing all orders with permission to simulate order status transitions.
+          </div>
+        </div>
+        <button id="exitAdminModeBtn" class="btn btn-outline btn-sm" type="button" style="background: white; padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+          Exit Staff Mode
+        </button>
+      </div>
+
+      <!-- Customer Order Lookup Form -->
+      <div id="customerLookupBar" class="order-lookup-bar" style="margin-bottom: 1.5rem; background: var(--surface); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <label for="orderLookupInput" style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">🔍 Find one of your orders:</label>
+        <div style="display: flex; gap: 0.5rem; flex: 1; min-width: 250px;">
+          <input 
+            type="text" 
+            id="orderLookupInput" 
+            placeholder="e.g. ORD1025" 
+            aria-label="Enter Order ID to track"
+            style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;" 
+          />
+          <button id="orderLookupBtn" class="btn btn-primary btn-sm" type="button">Track</button>
+          <button id="clearLookupBtn" class="btn btn-outline btn-sm" type="button" style="display: none;">Show My Orders</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label for="orderLookupToken">Private tracking code (if this order is not saved in your browser)</label>
+        <input id="orderLookupToken" type="password" autocomplete="off" spellcheck="false" aria-describedby="orderLookupTokenHelp" style="display: block; width: 100%; box-sizing: border-box; padding: 0.5rem 0.75rem;" />
+        <p id="orderLookupTokenHelp">Paste the code from your order confirmation, enter the order ID above, and select Track.</p>
+      </div>
+
+      <!-- Loading State -->
+      <div id="ordersLoader" class="loader-container">
+        <div class="spinner"></div>
+        <p>Fetching your past orders...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyOrdersState" class="empty-state" style="display: none;">
+        <div class="empty-state-icon">📦</div>
+        <h2 class="empty-state-title" id="emptyTitle">No orders placed yet</h2>
+        <p class="empty-state-text" id="emptyDesc">You haven't placed any food orders on CloudBite yet. Start exploring our delicious menus!</p>
+        <a href="restaurants.html" class="btn btn-primary">Find Food Now →</a>
+      </div>
+
+      <!-- Orders List (FR-08) -->
+      <div id="ordersListContainer" class="orders-list">
+        <!-- Rendered dynamically by js/orders.js -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <div>© 2026 CloudBite Project. All rights reserved.</div>
+        <div>REST API: <code>GET /api/orders</code> & <code>PATCH /api/orders/:id/status</code></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/orders.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudbite-backend
+  namespace: cloudbite
+  labels:
+    app.kubernetes.io/name: cloudbite-backend
+    app.kubernetes.io/part-of: cloudbite
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cloudbite-backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cloudbite-backend
+        app.kubernetes.io/part-of: cloudbite
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: backend
+          image: cloudbite-backend:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: cloudbite-backend-config
+          env:
+            - name: PGHOST
+              value: cloudbite-postgres
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: cloudbite
+            - name: PGUSER
+              value: cloudbite
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloudbite-secrets
+                  key: postgres-password
+            - name: ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudbite-secrets
+                  key: admin-token
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/live
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL

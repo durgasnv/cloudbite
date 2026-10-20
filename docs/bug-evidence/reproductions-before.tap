@@ -1,0 +1,305 @@
+TAP version 13
+# Subtest: D01: duplicate item rows cannot bypass the aggregate 50-unit limit
+not ok 1 - D01: duplicate item rows cannot bypass the aggregate 50-unit limit
+  ---
+  duration_ms: 617.640237
+  type: 'test'
+  location: '/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:48:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    201 !== 400
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 400
+  actual: 201
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:53:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: D02: checkout rejects different cities and preserves same-city multi-outlet orders
+not ok 2 - D02: checkout rejects different cities and preserves same-city multi-outlet orders
+  ---
+  duration_ms: 31.954084
+  type: 'test'
+  location: '/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:58:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    201 !== 400
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 400
+  actual: 201
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:63:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: D03: American / Fast Food chip and API include both advertised cuisines
+not ok 3 - D03: American / Fast Food chip and API include both advertised cuisines
+  ---
+  duration_ms: 12.052302
+  type: 'test'
+  location: '/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:70:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + []
+    - [
+    -   6,
+    -   37,
+    -   43,
+    -   48,
+    -   62,
+    -   65,
+    -   66,
+    -   70,
+    -   71,
+    -   84,
+    -   93,
+    -   96,
+    -   98
+    - ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 6
+    1: 37
+    2: 43
+    3: 48
+    4: 62
+    5: 65
+    6: 66
+    7: 70
+    8: 71
+    9: 84
+    10: 93
+    11: 96
+    12: 98
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:75:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: D04: unknown city selection never silently resets to all restaurants
+not ok 4 - D04: unknown city selection never silently resets to all restaurants
+  ---
+  duration_ms: 18.066617
+  type: 'test'
+  location: '/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:81:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    100 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 100
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:85:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: D05: superseded order lookups cannot overwrite a newer error or save tokens under the wrong ID
+not ok 5 - D05: superseded order lookups cannot overwrite a newer error or save tokens under the wrong ID
+  ---
+  duration_ms: 24.125297
+  type: 'test'
+  location: '/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:91:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:105:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: D06: blocked sessionStorage does not crash Orders initialization or staff access entry
+not ok 6 - D06: blocked sessionStorage does not crash Orders initialization or staff access entry
+  ---
+  duration_ms: 19.018267
+  type: 'test'
+  location: '/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:110:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Got unwanted exception.
+    Actual message: "SecurityError"
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual:
+  error: 'SecurityError'
+  stack: |-
+    Object.getItem (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:112:51)
+    getAdminToken (evalmachine.<anonymous>:222:25)
+    Object.initOrdersPage (evalmachine.<anonymous>:16:22)
+    /mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:114:40
+    getActual (node:assert:609:5)
+    Function.doesNotThrow (node:assert:777:32)
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:114:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  operator: 'doesNotThrow'
+  stack: |-
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:114:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: D07: unavailable menu dishes cannot be added through controls or programmatic cart calls
+not ok 7 - D07: unavailable menu dishes cannot be added through controls or programmatic cart calls
+  ---
+  duration_ms: 20.416017
+  type: 'test'
+  location: '/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:122:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:126:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Error reading file from /mnt/c/Users/durga/desktop/cloudbite/server/data/menu.json: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+# Subtest: D08: missing menu data must not silently turn a complete dish search into partial success
+not ok 8 - D08: missing menu data must not silently turn a complete dish search into partial success
+  ---
+  duration_ms: 25.900822
+  type: 'test'
+  location: '/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:134:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    200 !== 503
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 503
+  actual: 200
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:136:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: D08: frontend dish-search failure is visible instead of partial success
+not ok 9 - D08: frontend dish-search failure is visible instead of partial success
+  ---
+  duration_ms: 35.070112
+  type: 'test'
+  location: '/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:139:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /unavailable|unable/i. Input:
+    
+    "       4M Biryani House ★ 4.2 Chinese   📍  Musheerabad, Hyderabad View Menu →      12 To 12 BBQ ★ 4 Biryani   📍  Panampilly Nagar, Kochi View Menu →      A-One Bombay Biryani ★ 3.5 Biryani   📍  Shahibagh, Ahmedabad View Menu →      Bedi's Naan House ★ 3.6 Biryani   📍  Dhankawadi, Pune View Menu →      Ashifa Laziz Biryani ★ 4.1 Pizza   📍  Kota, Raipur View Menu →      Adhiya Beef Biriyani ★ 3.6 Biryani   📍  Nungambakkam, Chennai View Menu →"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: "       4M Biryani House ★ 4.2 Chinese   📍  Musheerabad, Hyderabad View Menu →      12 To 12 BBQ ★ 4 Biryani   📍  Panampilly Nagar, Kochi View Menu →      A-One Bombay Biryani ★ 3.5 Biryani   📍  Shahibagh, Ahmedabad View Menu →      Bedi's Naan House ★ 3.6 Biryani   📍  Dhankawadi, Pune View Menu →      Ashifa Laziz Biryani ★ 4.1 Pizza   📍  Kota, Raipur View Menu →      Adhiya Beef Biriyani ★ 3.6 Biryani   📍  Nungambakkam, Chennai View Menu →"
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:145:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: D09: malformed catalog structures fail closed on listing, filtering, details, and checkout
+not ok 10 - D09: malformed catalog structures fail closed on listing, filtering, details, and checkout
+  ---
+  duration_ms: 9.125476
+  type: 'test'
+  location: '/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:149:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    /api/menu with {}
+    
+    200 !== 503
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 503
+  actual: 200
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:154:14)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: D10: branch jobs sharing BUILD_NUMBER cannot publish identical image tags
+not ok 11 - D10: branch jobs sharing BUILD_NUMBER cannot publish identical image tags
+  ---
+  duration_ms: 6.786603
+  type: 'test'
+  location: '/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:167:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" not to be strictly deep-equal to:
+    
+    [
+      'cloudbite-backend:42',
+      'cloudbite-frontend:42'
+    ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'cloudbite-backend:42'
+    1: 'cloudbite-frontend:42'
+  actual:
+    0: 'cloudbite-backend:42'
+    1: 'cloudbite-frontend:42'
+  operator: 'notDeepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/mnt/c/Users/durga/desktop/cloudbite/test/debug-audit.test.js:181:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 0
+# fail 11
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9968.157535

@@ -1,0 +1,5 @@
+
+> cloudbite@1.0.0 check
+> node scripts/check-syntax.js
+
+Syntax check passed for 25 JavaScript files.

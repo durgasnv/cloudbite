@@ -1,7 +1,17 @@
 # CloudBite
 
+See [system requirements](requirements.md) and [project tracking](docs/project-tracking.md) for planned dataset/GPS work and open findings. The [chaos report](CHAOS_REPORT.md) records isolated failure/recovery experiments; run them with `npm run test:chaos`.
+
+The [debugging audit](BUG_REPORT.md) documents ten reproduced bugs, focused fixes, and regression evidence on `debug/reproducible-bug-audit`.
+
+For the complete explanation of the application, Jenkins pipeline, Docker/Minikube/Kubernetes deployment, monitoring, access URLs, and feature flows, see [How CloudBite runs](docs/how-cloudbite-runs.md).
+
 CloudBite is a simplified cloud-native food delivery application that demonstrates a secure DevSecOps software delivery lifecycle. Users can browse restaurants and menus, manage a cart, and simulate placing an order.
 
-The project addresses a common software-delivery problem: security checks are often performed only near the end of development, when vulnerabilities are more expensive to fix. CloudBite integrates automated testing, code-quality checks, secret detection, dependency scanning, and container-image scanning into its CI/CD pipeline so that critical security issues block deployment.
+The project addresses a common software-delivery problem: security checks are often performed only near the end of development, when vulnerabilities are more expensive to fix. The Jenkins pipeline now defines automated tests, syntax and SonarQube analysis, secret detection, dependency auditing, and container-image scanning. A failed gate stops deployment.
 
-Successful builds are containerized, deployed to Kubernetes, and monitored with Prometheus and Grafana. The goal is an end-to-end demonstration of developing, securing, deploying, and monitoring a small real-world-style application.
+Successful `main` builds are configured to deploy the two scanned images to Minikube. Prometheus and Grafana provide endpoint-health monitoring. The monitoring stack was verified locally on 2026-10-02, and the PostgreSQL-backed application deployment was verified on 2026-10-03; the Jenkins-to-Minikube release path is not yet verified. The setup and current limitations are recorded in [the CI/CD integration guide](docs/ci-cd-integration.md) and [monitoring guide](monitoring/README.md).
+
+Restaurant feeds can be filtered by city. Staff order access requires a configured `ADMIN_TOKEN`; customer tracking uses a private token returned at checkout. Orders use PostgreSQL when `DATABASE_URL` or `PGHOST` is set, with JSON storage available for local development. See [configuration](docs/configuration.md) and [Kubernetes setup](kubernetes/README.md). Use synthetic customer details for demonstrations; this project does not provide production customer accounts.
+
+The restaurant and menu catalog combines the uploaded Zomato and Swiggy menu datasets with matching restaurant metadata: 100 restaurants across 30 cities and 1,957 menu items. The homepage previews six restaurants; the full feed is at `/restaurants.html`. The raw CSVs are ignored by Git; [catalog import notes](docs/catalog-import.md) explain the selection, limitations, and regeneration. These are historical demo records, not live listings or availability. Run `PORT=5050 npm start` to serve both pages and the API on `http://localhost:5050` (or omit `PORT=5050` for the default port 5000).

@@ -1,0 +1,13 @@
+
+> cloudbite@1.0.0 check
+> node scripts/check-syntax.js
+
+Syntax check passed for 29 JavaScript files.
+
+Additional static checks completed:
+- bash -n scripts/deploy-minikube.sh
+- Python ast.parse for both CSV import scripts
+- yaml.safe_load_all for Docker, Kubernetes, and monitoring YAML
+- json.loads for monitoring dashboard JSON
+- All five frontend pages reference existing local JavaScript files
+- git diff --check passed for task changes with existing CRLF line endings recognized

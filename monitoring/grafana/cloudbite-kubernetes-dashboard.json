@@ -1,0 +1,47 @@
+{
+  "uid": "cloudbite-kubernetes",
+  "title": "CloudBite Kubernetes",
+  "tags": ["cloudbite", "kubernetes"],
+  "timezone": "browser",
+  "schemaVersion": 40,
+  "version": 1,
+  "refresh": "15s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Available application replicas",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "kube_deployment_status_replicas_available{namespace=\"cloudbite\",deployment=~\"cloudbite-backend|cloudbite-frontend\"}",
+          "legendFormat": "{{deployment}} available"
+        },
+        {
+          "refId": "B",
+          "expr": "kube_deployment_spec_replicas{namespace=\"cloudbite\",deployment=~\"cloudbite-backend|cloudbite-frontend\"}",
+          "legendFormat": "{{deployment}} desired"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Container restarts",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 9 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "kube_pod_container_status_restarts_total{namespace=\"cloudbite\",container=~\"backend|frontend\"}",
+          "legendFormat": "{{pod}} / {{container}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] }
+    }
+  ]
+}
