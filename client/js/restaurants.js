@@ -168,7 +168,8 @@ function populateCityOptions(restaurants) {
   citySelect.replaceChildren(new Option('All cities', ''));
   cities.forEach(city => citySelect.add(new Option(city, city)));
   const selected = cities.find(city => city.toLocaleLowerCase() === currentCityFilter.toLocaleLowerCase());
-  currentCityFilter = selected || '';
+  if (selected) currentCityFilter = selected;
+  else if (currentCityFilter) citySelect.add(new Option(`Unavailable city: ${currentCityFilter}`, currentCityFilter));
   citySelect.value = currentCityFilter;
 }
 

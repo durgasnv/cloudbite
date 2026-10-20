@@ -77,3 +77,13 @@ test('D03: American / Fast Food chip and API include both advertised cuisines', 
   assert.equal(response.status, 200);
   assert.deepEqual(response.body.data.map(r => r.id), expected.map(r => r.id));
 });
+
+test('D04: unknown city selection never silently resets to all restaurants', () => {
+  const ui = browser('restaurants');
+  ui.context.records = restaurants;
+  ui.run("currentCityFilter = 'Unknown-City-For-Reproduction'; populateCityOptions(records);");
+  assert.equal(ui.run('filterRestaurants(records, [], "", "all", currentCityFilter).length'), 0);
+  assert.equal(ui.node('restaurantCitySelect').value, 'Unknown-City-For-Reproduction');
+  ui.run("currentCityFilter = 'hyderabad'; populateCityOptions(records);");
+  assert.equal(ui.node('restaurantCitySelect').value, 'Hyderabad');
+});
