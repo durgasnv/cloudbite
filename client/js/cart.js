@@ -5,6 +5,7 @@
 
 let lastActiveElement = null;
 let checkoutCompleted = false;
+let checkoutInFlight = false;
 let checkoutAttempt;
 
 function checkoutKey(payload) {
@@ -266,7 +267,7 @@ async function refreshCartPrices() {
 // Handle Checkout Submission (POST /api/orders - FR-07)
 async function handlePlaceOrder(e) {
   e.preventDefault();
-  if (checkoutCompleted) return;
+  if (checkoutCompleted || checkoutInFlight) return;
   clearCheckoutError();
 
   const cart = getCart();
@@ -306,6 +307,7 @@ async function handlePlaceOrder(e) {
     totalAmount: totals.grandTotal
   };
 
+  checkoutInFlight = true;
   try {
     const attemptKey = checkoutKey(orderPayload);
     if (submitBtn) {
@@ -350,6 +352,7 @@ async function handlePlaceOrder(e) {
     showCheckoutError('Order confirmation could not be received. Your cart is saved. Retry with the same details to recover this order.', false);
     showToast('Connection error while placing order', 'error');
   } finally {
+    checkoutInFlight = false;
     // Failed requests can be retried; confirmed orders cannot be submitted twice.
     if (submitBtn) {
       submitBtn.disabled = checkoutCompleted;
