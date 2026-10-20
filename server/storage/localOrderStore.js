@@ -1,6 +1,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { conflict, verifyReplay } = require('./orderErrors');
 
 // One store per file in a single server process. Use PostgreSQL across processes.
 function createLocalOrderStore(filePath) {
@@ -58,6 +59,7 @@ function createLocalOrderStore(filePath) {
         }
         return result;
       } catch (error) {
+        if (error.status === 409) throw error;
         throw unavailable(error);
       }
     });
@@ -68,9 +70,12 @@ function createLocalOrderStore(filePath) {
 
   return {
     listOrders,
+    async findOrderByKey(hash) { return (await listOrders()).find(order => order.idempotencyHash === hash); },
     async findOrder(id) { return (await listOrders()).find(order => order.id === id); },
     createOrder(order) {
       return mutate(orders => {
+        const replay = order.idempotencyHash && orders.find(existing => existing.idempotencyHash === order.idempotencyHash);
+        if (replay) return verifyReplay(replay, order);
         if (orders.some(existing => existing.id === order.id)) throw new Error('Duplicate order ID');
         orders.push(order);
         return order;

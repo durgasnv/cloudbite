@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: '*', // Allow requests from any frontend port/origin
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Admin-Token', 'X-Order-Token']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Admin-Token', 'X-Order-Token', 'Idempotency-Key']
 }));
 
 app.use(express.json());

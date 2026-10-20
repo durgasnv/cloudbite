@@ -1,6 +1,7 @@
 const path = require('path');
 const { Pool } = require('pg');
 const { createLocalOrderStore } = require('./localOrderStore');
+const { conflict, verifyReplay } = require('./orderErrors');
 
 const ordersFilePath = process.env.ORDER_FILE_PATH || path.join(__dirname, '../data/orders.json');
 const localStore = createLocalOrderStore(ordersFilePath);
@@ -27,7 +28,10 @@ async function ensureSchema() {
       CREATE TABLE IF NOT EXISTS cloudbite_orders (
         id TEXT PRIMARY KEY,
         data JSONB NOT NULL
-      )
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS cloudbite_order_checkout_key
+        ON cloudbite_orders ((data->>'idempotencyHash'))
+        WHERE data->>'idempotencyHash' IS NOT NULL
     `).catch(error => {
       schemaReady = null;
       throw error;
@@ -50,13 +54,25 @@ async function findOrder(id) {
   return result.rows[0]?.data;
 }
 
+async function findOrderByKey(hash) {
+  if (!pool) return localStore.findOrderByKey(hash);
+  await ensureSchema();
+  const result = await pool.query("SELECT data FROM cloudbite_orders WHERE data->>'idempotencyHash' = $1", [hash]);
+  return result.rows[0]?.data;
+}
+
 async function createOrder(order) {
   if (pool) {
     await ensureSchema();
-    await pool.query('INSERT INTO cloudbite_orders (id, data) VALUES ($1, $2)', [order.id, order]);
-    return;
+    const inserted = await pool.query('INSERT INTO cloudbite_orders (id, data) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING data', [order.id, order]);
+    if (inserted.rows[0]) return inserted.rows[0].data;
+    if (order.idempotencyHash) {
+      const existing = await pool.query("SELECT data FROM cloudbite_orders WHERE data->>'idempotencyHash' = $1", [order.idempotencyHash]);
+      if (existing.rows[0]) return verifyReplay(existing.rows[0].data, order);
+    }
+    throw conflict('Duplicate order ID');
   }
-  await localStore.createOrder(order);
+  return localStore.createOrder(order);
 }
 
 async function updateOrderStatus(id, status) {
@@ -87,5 +103,5 @@ const safe = operation => async (...args) => {
     throw error;
   }
 };
-module.exports = Object.fromEntries(Object.entries({ listOrders, findOrder, createOrder, updateOrderStatus, checkStorage })
+module.exports = Object.fromEntries(Object.entries({ listOrders, findOrder, findOrderByKey, createOrder, updateOrderStatus, checkStorage })
   .map(([name, operation]) => [name, safe(operation)]));

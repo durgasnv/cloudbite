@@ -4,6 +4,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
 const orderStore = require('../storage/orderStore');
+const { verifyReplay } = require('../storage/orderErrors');
 const { badRequest, isRecord, positiveInteger, nonnegativeNumber } = require('../utils/validation');
 
 const menuFilePath = path.join(__dirname, '../data/menu.json');
@@ -22,7 +23,7 @@ function tokenMatches(provided, expected) {
 }
 
 function publicOrder(order) {
-  const { accessTokenHash, ...details } = order;
+  const { accessTokenHash, idempotencyHash, requestHash, ...details } = order;
   return details;
 }
 
@@ -124,6 +125,27 @@ router.post('/', async (req, res, next) => {
   try {
     if (!isRecord(req.body)) throw badRequest('Validation failed: request body must be an object.');
     const { customerName, customerPhone, customerAddress, items, totalAmount } = req.body;
+    const checkoutKey = req.headers['idempotency-key'];
+    if (checkoutKey !== undefined && (typeof checkoutKey !== 'string' || !/^[A-Za-z0-9_-]{16,128}$/.test(checkoutKey))) {
+      throw badRequest('Idempotency-Key must contain 16-128 letters, numbers, underscores or hyphens.');
+    }
+    const idempotencyHash = checkoutKey ? crypto.createHash('sha256').update(checkoutKey).digest('hex') : undefined;
+    // Explicit fields give the same fingerprint independent of JSON object key order.
+    const requestHash = crypto.createHash('sha256').update(JSON.stringify([
+      customerName, customerPhone, customerAddress,
+      Array.isArray(items) ? items.map(item => item && [item.id, item.quantity, item.price]) : items,
+      totalAmount
+    ])).digest('hex');
+
+    const tokenFor = id => crypto.createHmac('sha256', checkoutKey).update(id).digest('hex');
+    if (idempotencyHash) {
+      const existing = await orderStore.findOrderByKey(idempotencyHash);
+      if (existing) {
+        verifyReplay(existing, { requestHash });
+        return res.status(200).json({ success: true, message: 'Order already confirmed.',
+          data: customerOrder(existing), orderAccessToken: tokenFor(existing.id) });
+      }
+    }
 
     // Validate customer name
     if (!customerName || typeof customerName !== 'string' || customerName.trim() === '') {
@@ -240,9 +262,11 @@ router.post('/', async (req, res, next) => {
 
     const orderId = `ORD${crypto.randomBytes(12).toString('hex').toUpperCase()}`;
 
-    const orderAccessToken = crypto.randomBytes(32).toString('hex');
+    // A high-entropy checkout key is a private recovery credential. Persist only its hash.
+    const orderAccessToken = checkoutKey ? tokenFor(orderId) : crypto.randomBytes(32).toString('hex');
     const newOrder = {
       id: orderId,
+      ...(checkoutKey ? { idempotencyHash, requestHash } : {}),
       accessTokenHash: crypto.createHash('sha256').update(orderAccessToken).digest('hex'),
       customerName: customerName.trim(),
       customerPhone: customerPhone ? String(customerPhone).trim() : 'Not provided',
@@ -260,13 +284,14 @@ router.post('/', async (req, res, next) => {
       })
     };
 
-    await orderStore.createOrder(newOrder);
+    const persistedOrder = await orderStore.createOrder(newOrder);
+    const confirmed = persistedOrder || newOrder;
 
     res.status(201).json({
       success: true,
       message: 'Order placed successfully!',
-      data: customerOrder(newOrder),
-      orderAccessToken
+      data: customerOrder(confirmed),
+      orderAccessToken: checkoutKey ? tokenFor(confirmed.id) : orderAccessToken
     });
   } catch (error) {
     next(error);

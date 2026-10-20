@@ -21,6 +21,7 @@ function browser(script, values = new Map()) {
   const nodes = new Map();
   const context = vm.createContext({
     console: { error() {}, warn() {} },
+    crypto: require('node:crypto').webcrypto,
     localStorage: {
       getItem: key => values.get(key) || null,
       setItem: (key, value) => values.set(key, value),
@@ -110,4 +111,28 @@ test('manual tracking sends the private token in a header and renders customer t
   function visit(el) { texts.push(el.textContent); for (const child of el.children) visit(child); }
   visit(node('ordersListContainer'));
   assert.ok(texts.includes('<img src=x onerror=alert(1)>'));
+});
+
+test('uncertain checkout reuses the persisted attempt key after page reload', async () => {
+  const values = new Map([['cloudbite_cart', JSON.stringify([{ id: 1, name: 'Dish', price: 100, quantity: 1 }])]]);
+  const first = browser('cart', values);
+  first.node('customerName').value = 'Synthetic customer';
+  first.context.showToast = () => {};
+  let key;
+  first.context.fetch = async (url, options) => {
+    key = options.headers['Idempotency-Key'];
+    throw new Error('Lost response');
+  };
+  await first.context.handlePlaceOrder({ preventDefault() {} });
+  assert.ok(key);
+  const reloaded = browser('cart', values);
+  reloaded.node('customerName').value = 'Synthetic customer';
+  reloaded.context.fetch = async (url, options) => {
+    assert.equal(options.headers['Idempotency-Key'], key);
+    return { ok: true, json: async () => ({ success: true,
+      data: { id: 'ORDRECOVERED', totalAmount: 150 }, orderAccessToken: 'c'.repeat(64) }) };
+  };
+  await reloaded.context.handlePlaceOrder({ preventDefault() {} });
+  assert.equal(reloaded.node('modalOrderId').textContent, 'ORDRECOVERED');
+  assert.equal(values.has('cloudbite_checkout_attempt'), false);
 });

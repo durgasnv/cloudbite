@@ -5,6 +5,20 @@
 
 let lastActiveElement = null;
 let checkoutCompleted = false;
+let checkoutAttempt;
+
+function checkoutKey(payload) {
+  const fingerprint = JSON.stringify(payload);
+  if (!checkoutAttempt) {
+    try { checkoutAttempt = JSON.parse(localStorage.getItem('cloudbite_checkout_attempt')); } catch (_) { /* memory fallback */ }
+  }
+  if (!checkoutAttempt || checkoutAttempt.payload !== fingerprint ||
+      typeof checkoutAttempt.key !== 'string' || !/^[A-Za-z0-9_-]{16,128}$/.test(checkoutAttempt.key)) {
+    checkoutAttempt = { payload: fingerprint, key: crypto.randomUUID() };
+    try { localStorage.setItem('cloudbite_checkout_attempt', JSON.stringify(checkoutAttempt)); } catch (_) { /* memory fallback */ }
+  }
+  return checkoutAttempt.key;
+}
 
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
@@ -293,6 +307,7 @@ async function handlePlaceOrder(e) {
   };
 
   try {
+    const attemptKey = checkoutKey(orderPayload);
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Placing Order... ⏳';
@@ -301,7 +316,8 @@ async function handlePlaceOrder(e) {
     const response = await fetch(`${API_BASE_URL}/orders`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Idempotency-Key': attemptKey
       },
       body: JSON.stringify(orderPayload)
     });
@@ -316,6 +332,8 @@ async function handlePlaceOrder(e) {
       return;
     }
 
+    try { localStorage.removeItem('cloudbite_checkout_attempt'); } catch (_) { /* confirmed in memory */ }
+
     // A confirmed order must not be submitted again if browser storage fails.
     checkoutCompleted = true;
     const accessSaved = saveMyOrderAccess(result.data.id, result.orderAccessToken);
@@ -329,7 +347,7 @@ async function handlePlaceOrder(e) {
 
   } catch (error) {
     console.error('Error placing order:', error);
-    showCheckoutError('Unable to connect to order service. Please check your connection and try again.', false);
+    showCheckoutError('Order confirmation could not be received. Your cart is saved. Retry with the same details to recover this order.', false);
     showToast('Connection error while placing order', 'error');
   } finally {
     // Failed requests can be retried; confirmed orders cannot be submitted twice.
