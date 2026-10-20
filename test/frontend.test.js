@@ -1,6 +1,11 @@
 const { test, before, after } = require('node:test');
 const assert = require('node:assert');
 process.env.ADMIN_TOKEN = 'test-only-configured-token';
+process.env.NODE_ENV = 'test';
+delete process.env.DATABASE_URL;
+delete process.env.PGHOST;
+const temporaryOrdersDirectory = require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'cloudbite-frontend-test-'));
+process.env.ORDER_FILE_PATH = require('node:path').join(temporaryOrdersDirectory, 'orders.json');
 const app = require('../server/server');
 const { validateCartItem, sanitizeImageUrl, formatPrice, getMyOrderAccess, saveMyOrderAccess } = require('../client/js/app');
 const { filterRestaurants, getAvailableCities } = require('../client/js/restaurants');
@@ -19,7 +24,7 @@ function totalForTestItem(quantity) {
 
 let server;
 let baseUrl;
-const ordersFilePath = path.join(__dirname, '../server/data/orders.json');
+const ordersFilePath = process.env.ORDER_FILE_PATH;
 let initialOrdersContent = '[]';
 
 before(async () => {
@@ -42,6 +47,7 @@ after(async () => {
     console.error('Failed to restore orders.json:', e);
   }
   await new Promise((resolve) => server.close(resolve));
+  await fs.rm(temporaryOrdersDirectory, { recursive: true, force: true });
 });
 
 /* ==========================================================================

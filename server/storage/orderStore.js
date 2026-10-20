@@ -2,7 +2,7 @@ const path = require('path');
 const { Pool } = require('pg');
 const { createLocalOrderStore } = require('./localOrderStore');
 
-const ordersFilePath = path.join(__dirname, '../data/orders.json');
+const ordersFilePath = process.env.ORDER_FILE_PATH || path.join(__dirname, '../data/orders.json');
 const localStore = createLocalOrderStore(ordersFilePath);
 const databaseConfigured = Boolean(process.env.DATABASE_URL || process.env.PGHOST);
 const pool = databaseConfigured ? new Pool(process.env.DATABASE_URL
