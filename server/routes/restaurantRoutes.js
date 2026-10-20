@@ -72,7 +72,9 @@ router.get('/', async (req, res, next) => {
     if (cuisine && cuisine.toLowerCase() !== 'all') {
       const cuisineQuery = cuisine.toLowerCase().trim();
       restaurants = restaurants.filter(restaurant =>
-        restaurant.cuisine.toLowerCase().includes(cuisineQuery)
+        cuisineQuery === 'american / fast food'
+          ? /american|fast\s*food/i.test(restaurant.cuisine)
+          : restaurant.cuisine.toLowerCase().includes(cuisineQuery)
       );
     }
 

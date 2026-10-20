@@ -226,7 +226,9 @@ function filterRestaurants(restaurants, menuItems, searchQuery, cuisineFilter, c
 
     const matchesCuisine =
       cuisine === 'all' ||
-      (restaurant.cuisine || '').toLowerCase().includes(cuisine);
+      (cuisine === 'american / fast food'
+        ? /american|fast\s*food/i.test(restaurant.cuisine || '')
+        : (restaurant.cuisine || '').toLowerCase().includes(cuisine));
 
     // Attach matched dishes temporarily for badge display
     if (matchingDishes.length > 0 && query && !nameMatch && !cuisineMatch) {

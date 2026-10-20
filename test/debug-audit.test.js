@@ -66,3 +66,14 @@ test('D02: checkout rejects different cities and preserves same-city multi-outle
   assert.ok(sameCity);
   assert.equal((await request('/api/orders', order([first, sameCity].map(item => ({ id: item.id, quantity: 1 }))))).status, 201);
 });
+
+test('D03: American / Fast Food chip and API include both advertised cuisines', async () => {
+  const html = await readFile(path.resolve(__dirname, '../client/restaurants.html'), 'utf8');
+  const chip = html.match(/data-cuisine="([^"]+)">American \/ Fast Food/)[1];
+  const expected = restaurants.filter(r => /american|fast\s*food/i.test(r.cuisine));
+  assert.ok(expected.length > 0);
+  assert.deepEqual(filterRestaurants(structuredClone(restaurants), [], '', chip).map(r => r.id), expected.map(r => r.id));
+  const response = await request('/api/restaurants?cuisine=' + encodeURIComponent(chip));
+  assert.equal(response.status, 200);
+  assert.deepEqual(response.body.data.map(r => r.id), expected.map(r => r.id));
+});
