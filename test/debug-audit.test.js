@@ -87,3 +87,22 @@ test('D04: unknown city selection never silently resets to all restaurants', () 
   ui.run("currentCityFilter = 'hyderabad'; populateCityOptions(records);");
   assert.equal(ui.node('restaurantCitySelect').value, 'Hyderabad');
 });
+
+test('D05: superseded order lookups cannot overwrite a newer error or save tokens under the wrong ID', async () => {
+  const ui = browser('orders');
+  const pending = [];
+  ui.context.fetch = () => new Promise(resolve => pending.push(resolve));
+  ui.node('orderLookupToken').value = 'a'.repeat(64);
+  ui.node('orderLookupInput').value = 'ORDOLD';
+  const old = ui.context.handleOrderLookup();
+  ui.node('orderLookupToken').value = 'b'.repeat(64);
+  ui.node('orderLookupInput').value = 'ORDNEW';
+  const recent = ui.context.handleOrderLookup();
+  pending[1]({ ok: false, status: 403, json: async () => ({ success: false }) });
+  await recent;
+  pending[0]({ ok: true, status: 200, json: async () => ({ success: true, data: { id: 'ORDOLD', items: [], totalAmount: 100 } }) });
+  await old;
+  assert.equal(ui.node('ordersListContainer').children.length, 0);
+  assert.equal(ui.node('emptyOrdersState').style.display, 'block');
+  assert.equal(ui.values.has('cloudbite_my_orders'), false);
+});

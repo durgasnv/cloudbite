@@ -5,6 +5,7 @@
 
 let isAdminMode = false;
 let currentLookupId = null;
+let ordersRequestVersion = 0;
 
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
@@ -116,6 +117,9 @@ function handleOrderLookup() {
 }
 
 async function fetchOrders() {
+  const requestVersion = ++ordersRequestVersion;
+  const lookupId = currentLookupId;
+  const adminMode = isAdminMode;
   const container = document.getElementById('ordersListContainer');
   const emptyState = document.getElementById('emptyOrdersState');
   const emptyTitle = document.getElementById('emptyTitle');
@@ -138,13 +142,13 @@ async function fetchOrders() {
     let url = `${API_BASE_URL}/orders`;
 
     // 1. If looking up a specific Order ID
-    if (currentLookupId) {
-      url = `${API_BASE_URL}/orders/${encodeURIComponent(currentLookupId)}`;
-      const savedOrder = getMyOrderAccess().find(entry => entry.id === currentLookupId);
+    if (lookupId) {
+      url = `${API_BASE_URL}/orders/${encodeURIComponent(lookupId)}`;
+      const savedOrder = getMyOrderAccess().find(entry => entry.id === lookupId);
       const tokenInput = document.getElementById('orderLookupToken');
       const enteredToken = tokenInput ? tokenInput.value.trim() : '';
       const trackingToken = enteredToken || (savedOrder && savedOrder.token);
-      if (!isAdminMode && !/^[a-f0-9]{64}$/i.test(trackingToken || '')) {
+      if (!adminMode && !/^[a-f0-9]{64}$/i.test(trackingToken || '')) {
         if (loader) loader.style.display = 'none';
         if (emptyState) {
           if (emptyTitle) emptyTitle.textContent = 'Order access unavailable';
@@ -153,14 +157,15 @@ async function fetchOrders() {
         }
         return;
       }
-      if (!isAdminMode) headers['x-order-token'] = trackingToken;
+      if (!adminMode) headers['x-order-token'] = trackingToken;
       const response = await fetchApiResponse(url, { headers });
+      if (requestVersion !== ordersRequestVersion) return;
 
       if (loader) loader.style.display = 'none';
 
       if (response.status === 404) {
         if (emptyState) {
-          if (emptyTitle) emptyTitle.textContent = `Order #${currentLookupId} not found`;
+          if (emptyTitle) emptyTitle.textContent = `Order #${lookupId} not found`;
           if (emptyDesc) emptyDesc.textContent = 'Please double check the Order ID and try again.';
           emptyState.style.display = 'block';
         }
@@ -180,9 +185,10 @@ async function fetchOrders() {
       }
 
       const resJson = await response.json();
+      if (requestVersion !== ordersRequestVersion) return;
       if (resJson.success && resJson.data) {
-        if (!isAdminMode && enteredToken) saveMyOrderAccess(currentLookupId, enteredToken);
-        renderOrdersList([resJson.data], resJson.isAdmin || isAdminMode);
+        if (!adminMode && enteredToken) saveMyOrderAccess(lookupId, enteredToken);
+        renderOrdersList([resJson.data], resJson.isAdmin || adminMode);
       } else {
         throw new Error(resJson.message || 'Order could not be retrieved.');
       }
@@ -190,8 +196,9 @@ async function fetchOrders() {
     }
 
     // 2. If Staff Mode is active, fetch all global orders
-    if (isAdminMode) {
+    if (adminMode) {
       const response = await fetchApiResponse(url, { headers });
+      if (requestVersion !== ordersRequestVersion) return;
       if (loader) loader.style.display = 'none';
 
       if (!response.ok) {
@@ -204,6 +211,7 @@ async function fetchOrders() {
       }
 
       const result = await response.json();
+      if (requestVersion !== ordersRequestVersion) return;
       if (result.isAdmin && result.success && Array.isArray(result.data) && result.data.length > 0) {
         renderOrdersList(result.data, true);
       } else if (!result.isAdmin) {
@@ -238,6 +246,7 @@ async function fetchOrders() {
       });
       return response.ok ? (await response.json()).data : null;
     }));
+    if (requestVersion !== ordersRequestVersion) return;
     if (loader) loader.style.display = 'none';
     const orders = responses.filter(Boolean).reverse();
     if (orders.length > 0) {
@@ -251,6 +260,7 @@ async function fetchOrders() {
     }
 
   } catch (error) {
+    if (requestVersion !== ordersRequestVersion) return;
     console.error('Error fetching orders:', error);
     if (loader) loader.style.display = 'none';
     renderOrdersErrorState(container, 'Unable to load orders right now. Please check your network connection and try again.');
