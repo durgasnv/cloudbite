@@ -85,7 +85,10 @@ function promptAdminMode() {
     return;
   }
 
-  setAdminToken(cleanKey);
+  if (!setAdminToken(cleanKey)) {
+    showToast('Staff access could not be saved. Allow browser session storage and retry.', 'error');
+    return;
+  }
   isAdminMode = true;
   updateAdminModeBanner();
   showToast('Checking staff access', 'info');

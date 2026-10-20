@@ -106,3 +106,15 @@ test('D05: superseded order lookups cannot overwrite a newer error or save token
   assert.equal(ui.node('emptyOrdersState').style.display, 'block');
   assert.equal(ui.values.has('cloudbite_my_orders'), false);
 });
+
+test('D06: blocked sessionStorage does not crash Orders initialization or staff access entry', async () => {
+  const ui = browser('orders');
+  ui.context.sessionStorage = { getItem() { throw new Error('SecurityError'); },
+    setItem() { throw new Error('SecurityError'); }, removeItem() { throw new Error('SecurityError'); } };
+  assert.doesNotThrow(() => ui.context.initOrdersPage());
+  assert.equal(ui.context.getAdminToken(), '');
+  assert.doesNotThrow(() => ui.context.setAdminToken('debug-only-token'));
+  ui.context.window.prompt = () => 'debug-only-token';
+  assert.doesNotThrow(() => ui.context.promptAdminMode());
+  assert.equal(ui.run('isAdminMode'), false);
+});

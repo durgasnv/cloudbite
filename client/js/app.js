@@ -218,16 +218,21 @@ function saveMyOrderAccess(orderId, token) {
 }
 
 function getAdminToken() {
-  if (typeof sessionStorage === 'undefined') return '';
-  return sessionStorage.getItem(ADMIN_TOKEN_KEY) || '';
+  try {
+    return typeof sessionStorage === 'undefined' ? '' : sessionStorage.getItem(ADMIN_TOKEN_KEY) || '';
+  } catch (_) {
+    return '';
+  }
 }
 
 function setAdminToken(token) {
-  if (typeof sessionStorage === 'undefined') return;
-  if (token) {
-    sessionStorage.setItem(ADMIN_TOKEN_KEY, String(token).trim());
-  } else {
-    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+  try {
+    if (typeof sessionStorage === 'undefined') return false;
+    if (token) sessionStorage.setItem(ADMIN_TOKEN_KEY, String(token).trim());
+    else sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+    return !token || getAdminToken() === String(token).trim();
+  } catch (_) {
+    return false;
   }
 }
 
