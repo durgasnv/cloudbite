@@ -125,8 +125,8 @@ async function fetchRestaurants() {
 
   try {
     const [restaurantsRes, menuRes] = await Promise.all([
-      fetch(`${API_BASE_URL}/restaurants`),
-      fetch(`${API_BASE_URL}/menu`).catch(() => null)
+      fetchApiResponse(`${API_BASE_URL}/restaurants`),
+      fetchApiResponse(`${API_BASE_URL}/menu`).catch(() => null)
     ]);
 
     if (!restaurantsRes.ok) {

@@ -154,7 +154,7 @@ async function fetchOrders() {
         return;
       }
       if (!isAdminMode) headers['x-order-token'] = trackingToken;
-      const response = await fetch(url, { headers });
+      const response = await fetchApiResponse(url, { headers });
 
       if (loader) loader.style.display = 'none';
 
@@ -191,7 +191,7 @@ async function fetchOrders() {
 
     // 2. If Staff Mode is active, fetch all global orders
     if (isAdminMode) {
-      const response = await fetch(url, { headers });
+      const response = await fetchApiResponse(url, { headers });
       if (loader) loader.style.display = 'none';
 
       if (!response.ok) {
@@ -233,7 +233,7 @@ async function fetchOrders() {
     }
 
     const responses = await Promise.all(myOrders.map(async entry => {
-      const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(entry.id)}`, {
+      const response = await fetchApiResponse(`${API_BASE_URL}/orders/${encodeURIComponent(entry.id)}`, {
         headers: { 'x-order-token': entry.token }
       });
       return response.ok ? (await response.json()).data : null;
@@ -547,7 +547,7 @@ async function handleStatusChange(orderId, newStatus) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(orderId)}/status`, {
+    const response = await fetchApiResponse(`${API_BASE_URL}/orders/${encodeURIComponent(orderId)}/status`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

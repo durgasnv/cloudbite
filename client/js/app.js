@@ -339,3 +339,25 @@ if (typeof module !== 'undefined' && module.exports) {
     showToast
   };
 }
+
+
+// Bound fetch AND JSON-body consumption; callers decide when a write is safe to retry.
+async function fetchApi(url, options = {}, timeoutMs = 10000) {
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timer = controller && typeof setTimeout !== 'undefined'
+    ? setTimeout(() => controller.abort(), timeoutMs) : null;
+  try {
+    const response = await fetch(url, { ...options, ...(controller ? { signal: controller.signal } : {}) });
+    const data = await response.json();
+    if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid service response.');
+    return { response, data };
+  } finally {
+    if (timer !== null) clearTimeout(timer);
+  }
+}
+
+
+async function fetchApiResponse(url, options) {
+  const { response, data } = await fetchApi(url, options);
+  return { ok: response.ok, status: response.status, json: async () => data };
+}

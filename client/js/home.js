@@ -70,7 +70,7 @@ async function loadFeaturedRestaurants() {
   const container = document.getElementById('featuredRestaurants');
   if (!container) return;
   try {
-    const response = await fetch(`${API_BASE_URL}/restaurants`);
+    const response = await fetchApiResponse(`${API_BASE_URL}/restaurants`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const body = await response.json();
     if (!body.success || !Array.isArray(body.data)) throw new Error('Invalid restaurant response');

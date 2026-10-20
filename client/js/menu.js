@@ -21,7 +21,7 @@ async function initMenuPage(restaurantId) {
 
   try {
     // 1. Fetch Restaurant details (FR-02)
-    const resResponse = await fetch(`${API_BASE_URL}/restaurants/${encodeURIComponent(restaurantId)}`);
+    const resResponse = await fetchApiResponse(`${API_BASE_URL}/restaurants/${encodeURIComponent(restaurantId)}`);
     if (!resResponse.ok) {
       throw new Error(`Restaurant not found (Status ${resResponse.status})`);
     }
@@ -29,7 +29,7 @@ async function initMenuPage(restaurantId) {
     currentRestaurant = resData.data;
 
     // 2. Fetch Restaurant Menu (FR-03)
-    const menuResponse = await fetch(`${API_BASE_URL}/restaurants/${encodeURIComponent(restaurantId)}/menu`);
+    const menuResponse = await fetchApiResponse(`${API_BASE_URL}/restaurants/${encodeURIComponent(restaurantId)}/menu`);
     if (!menuResponse.ok) {
       throw new Error(`Failed to fetch menu (Status ${menuResponse.status})`);
     }

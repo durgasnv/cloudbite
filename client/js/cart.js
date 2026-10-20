@@ -315,7 +315,7 @@ async function handlePlaceOrder(e) {
       submitBtn.textContent = 'Placing Order... ⏳';
     }
 
-    const response = await fetch(`${API_BASE_URL}/orders`, {
+    const { response, data: result } = await fetchApi(`${API_BASE_URL}/orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -324,9 +324,7 @@ async function handlePlaceOrder(e) {
       body: JSON.stringify(orderPayload)
     });
 
-    const result = await response.json();
-
-    if (!response.ok || !result.success) {
+    if (!response.ok || result.success !== true) {
       // Order was rejected or price changed - DO NOT clear cart!
       const isPriceOrItemIssue = result.priceChanged || result.unavailableItemId;
       showCheckoutError(result.message || 'Failed to place order.', isPriceOrItemIssue);
@@ -334,6 +332,11 @@ async function handlePlaceOrder(e) {
       return;
     }
 
+    if (!result.data || typeof result.data.id !== 'string' || !result.data.id ||
+        typeof result.data.totalAmount !== 'number' || !Number.isFinite(result.data.totalAmount) || result.data.totalAmount < 0 ||
+        !/^[a-f0-9]{64}$/i.test(result.orderAccessToken || '')) {
+      throw new Error('Invalid order confirmation.');
+    }
     try { localStorage.removeItem('cloudbite_checkout_attempt'); } catch (_) { /* confirmed in memory */ }
 
     // A confirmed order must not be submitted again if browser storage fails.
