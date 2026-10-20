@@ -4,6 +4,8 @@
 
 ---
 
+Requirements update: 2026-10-20. Open feature work and reported defects are tracked in [Project tracking](docs/project-tracking.md). These requirements describe target behavior; tracker status records implementation and verification separately.
+
 ## 1. Project Overview
 
 CloudBite is a simplified food delivery web application inspired by platforms such as Zomato. The application allows users to browse restaurants, view menus, add food items to a cart, and simulate placing an order.
@@ -64,7 +66,7 @@ The application will provide a simplified food ordering experience.
 
 Users should be able to:
 
-* View available restaurants.
+* View restaurants eligible for the selected location, using GPS with permission or manual location selection.
 * View restaurant details.
 * View food items available at a restaurant.
 * Add food items to a cart.
@@ -83,7 +85,7 @@ The following features are outside the initial scope:
 * Real payment processing.
 * Real-time delivery tracking.
 * Delivery partner management.
-* GPS-based tracking.
+* Continuous GPS tracking of users, delivery partners, or deliveries. One-time GPS-based restaurant discovery is in scope.
 * Restaurant owner dashboards.
 * Real restaurant integration.
 * Real payment gateway integration.
@@ -122,7 +124,8 @@ Each restaurant may contain:
 * Restaurant ID
 * Restaurant name
 * Description
-* Location
+* City and outlet locality
+* Verified latitude and longitude, with coordinate provenance, where available
 * Cuisine type
 * Rating
 * Image
@@ -237,6 +240,40 @@ The exact API structure may be modified during implementation.
 
 ---
 
+## FR-10: Dataset Identity, Images, and Provenance
+
+The catalog shall map each food item to a relevant dish image through an explicit mapping keyed by stable dish identity. A single placeholder image shall not represent all dishes. A generic fallback may be used only when a mapped image is missing or fails to load; it shall be distinguishable from a verified dish image, with meaningful alternative text. Different dishes shall resolve to appropriate images; reuse is permitted for the same dish or a genuinely representative image. Image source and usage rights shall be recorded.
+
+Regeneration shall preserve the identities of existing outlets, dishes, and variants even when source rows are reordered, added, or removed. An ID shall never be reassigned to a different dish. Stale carts shall be rejected or require explicit review when items change or disappear, including when the replacement has the same price. Metadata enrichment shall require an unambiguous outlet match using city and locality or a source outlet identifier; ambiguous ratings and prices shall remain unknown with provenance retained. Different prices within the same outlet/dish group shall have explicit variants (such as size or portion), or be flagged for review rather than presented as indistinguishable items.
+
+## FR-11: GPS and Location-Based Restaurant Eligibility
+
+The system shall offer an explicit action to use browser geolocation and request permission before obtaining coordinates. With valid coordinates, it shall resolve the service city and return only restaurants in that city and within a configured, documented delivery radius. For example, a user located in Hyderabad shall see only eligible nearby Hyderabad outlets, excluding other cities and Hyderabad outlets outside the radius. Radius and city resolution rules shall be configured and documented before this feature is accepted; no fixed radius is prescribed here.
+
+Restaurants shall have verified coordinates before being treated as GPS-nearby; city-only records shall not be claimed as distance-verified. The UI shall display the active location and allow the user to change it. Permission denial, unavailable GPS, timeout, unsupported browsers, or failed city resolution shall offer manual city/locality selection and a clear explanation. Manual city-only results shall be identified as such; checkout shall still validate delivery eligibility. Unknown city URLs and locations without eligible restaurants shall show an explicit empty or unsupported-location state and shall never silently expand to all cities.
+
+Location eligibility shall apply consistently to restaurant listings, cuisine filters, dish search, menu access, cart validation, and checkout. The backend shall validate coordinates and enforce eligibility independently of browser filtering. Changing the delivery location shall revalidate existing cart items and prevent ordering ineligible items. Restaurant/menu coordinates shall retain source provenance; missing coordinates shall trigger enrichment or exclusion from GPS results.
+
+## FR-12: Safe Catalog Publication and API Errors
+
+Catalog import shall validate restaurants, menu structure, unique IDs, and all menu-to-restaurant references before publication. Restaurants and menus shall be published as one consistent catalog version. An interrupted import shall leave the previous complete version available or recover to a complete version, with zero orphan menu records. Invalid catalog structures shall return an appropriate non-2xx error with `success: false`, never HTTP 200 with `success: true`.
+
+## FR-13: Checkout Integrity and Retry Safety
+
+Checkout shall enforce a single delivery city and the active location's restaurant eligibility before calculating delivery charges. Cross-city carts shall be rejected with an actionable explanation. Quantities shall be aggregated by item ID before enforcing the 50-unit per-item limit; two rows of 50 for the same ID shall be rejected.
+
+Order creation shall support a persisted idempotency key for a checkout attempt. Retrying the same payload after a lost response shall return the original order without creating another record; reusing the key for a different payload shall fail explicitly. This shall hold for concurrent requests and supported persistence backends. Failed price refresh shall retain a visible error and provide a retry path; the UI shall not imply that prices were refreshed or allow an unreviewed price change to proceed.
+
+## FR-14: Filters, Availability, and Search Feedback
+
+Cuisine normalization shall ensure that Fast Food includes matching restaurants. Menu items marked unavailable shall have disabled Add controls, and the server shall reject attempts to order them. A failed menu API request during dish search shall show a visible failure or partial-results state with retry, rather than silently presenting a reduced result set as complete. All filter and search results shall respect FR-11.
+
+## FR-15: Order Lookup and Browser Storage Resilience
+
+Only the latest active order lookup shall update the results, error, and loading state. Earlier responses shall not overwrite newer results or appear alongside a newer error. Orders-page initialization shall tolerate blocked, unavailable, or full browser storage, show a usable recovery path, and continue to support manual order lookup with the required tracking credentials.
+
+---
+
 # 6. Non-Functional Requirements
 
 ## NFR-01: Security
@@ -264,7 +301,7 @@ The CI/CD pipeline should automatically execute when new code is pushed to the r
 
 The application should remain available after successful deployment.
 
-Kubernetes should be configured to restart failed application containers where applicable.
+Kubernetes should be configured to restart failed application containers where applicable. Backend liveness shall report process health independently of database availability. Database outages shall fail readiness and return appropriate dependency errors without triggering liveness-driven restart loops.
 
 ---
 
@@ -287,6 +324,16 @@ Application code, CI/CD configuration, security configuration, Kubernetes manife
 All source code and configuration files should be maintained in GitHub.
 
 Sensitive information such as passwords, tokens, API keys, and database credentials shall not be committed to the repository.
+
+---
+
+## NFR-07: Keyboard Accessibility
+
+Closed confirmation dialogs shall have no keyboard-focusable content. While a confirmation dialog is open, keyboard focus shall remain within it; closing it shall restore focus to its trigger. Quantity changes shall preserve keyboard focus on the relevant control or a predictable adjacent control if an item is removed.
+
+## NFR-08: Location Privacy and Failure Handling
+
+Browser geolocation shall run in a secure context (HTTPS, or localhost for development). Location access shall be initiated by the user; the application shall avoid continuous tracking and retain precise coordinates only as needed for the active location flow. Coordinates shall not be included in URLs or routine logs. Denied permission shall not prevent manual location selection.
 
 ---
 
@@ -364,7 +411,7 @@ Identify known vulnerabilities in application dependencies.
 
 ## Stage 7: Docker Image Build
 
-Build the application Docker image.
+Build the application Docker image. Image tags shall uniquely identify the Jenkins job/branch and build (or an immutable commit-specific artifact) across jobs sharing a Docker host. Scan, deployment, and cleanup shall refer to the same immutable artifact or digest. Parallel branch jobs shall not overwrite or remove each other's images.
 
 ## Stage 8: Container Security Scan
 
@@ -760,11 +807,21 @@ The pipeline should fail when critical tests fail.
 
 ---
 
+### Regression and Feature Acceptance
+
+The [project tracker](docs/project-tracking.md) maps each reported finding to its requirement and closure check. Verification shall cover representative dish image mapping and fallback; stable IDs after regeneration; interrupted catalog publication; idempotent order retries; concurrent branch image builds; ambiguous outlet metadata and variants; cross-city checkout; duplicate item quantities; invalid catalogs; filters and unknown cities; keyboard focus; racing lookups; blocked storage; unavailable dishes; search failures; database outages; and price-refresh failures.
+
+GPS acceptance shall cover mocked Hyderabad coordinates, another city, same-city outlets inside and outside the configured radius, missing restaurant coordinates, invalid coordinates, location changes with an existing cart, direct API requests, denied permission, timeout, unsupported geolocation, manual fallback, and zero eligible restaurants. Browser permission and secure-context behavior shall also be checked in the deployed frontend. No feature or finding shall be marked complete without recorded validation evidence.
+
+---
+
 # 20. Project Success Criteria
 
 The project will be considered successful when:
 
-* [ ] Users can browse restaurants.
+* [ ] Users can browse restaurants eligible for their GPS or manually selected location, including denied-permission and empty-result handling.
+* [ ] Dishes have appropriate image mappings and safe fallbacks.
+* [ ] Catalog identity, publication, checkout safety, and all reported findings meet the linked tracker acceptance checks.
 * [ ] Users can view restaurant menus.
 * [ ] Users can add food items to a cart.
 * [ ] Users can update and remove cart items.
